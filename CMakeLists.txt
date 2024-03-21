@@ -18,6 +18,11 @@ set(PROJECT_SOURCES
         mainwindow.h
         glwidget.cpp
         glwidget.h
+        shadermanager.cpp
+        shadermanager.h
+
+        shaders/base.vert
+        shaders/base.frag
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

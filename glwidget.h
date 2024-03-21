@@ -6,6 +6,8 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 
+#include "shadermanager.h"
+
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 
@@ -29,7 +31,7 @@ protected:
 private:
     void makeObject();
     QOpenGLTexture* texture = nullptr;
-    QOpenGLShaderProgram *program = nullptr;
+    ShaderManager* shaderManager;
     QOpenGLBuffer vbo;
 };
 
