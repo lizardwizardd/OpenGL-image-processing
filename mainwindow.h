@@ -15,6 +15,7 @@ public:
 
 private slots:
     void chooseFile();
+    void resizeToImage(int width, int height);
 private:
     GLWidget* glWidget;
 };

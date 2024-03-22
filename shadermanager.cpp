@@ -20,6 +20,11 @@ QOpenGLShaderProgram* ShaderManager::getShader(ShaderName shaderName)
         return nullptr;
 }
 
+void ShaderManager::setInt(ShaderName shader, char *name, int value)
+{
+    shaders.at(shader)->setUniformValue(name, value);
+}
+
 void ShaderManager::initializeContainers()
 {
     addShader(ShaderName::Base,

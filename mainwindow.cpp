@@ -20,6 +20,7 @@ MainWindow::MainWindow()
     setMenuBar(menuBar);
 
     glWidget = new GLWidget(this);
+    connect(glWidget, &GLWidget::imageSizeChanged, this, &MainWindow::resizeToImage);
     setCentralWidget(glWidget);
 }
 
@@ -35,4 +36,10 @@ void MainWindow::chooseFile()
     {
         this->glWidget->loadTexture(fileName);
     }
+}
+
+void MainWindow::resizeToImage(int width, int height)
+{
+    QSize newSize(width, height); // TODO: auto margin
+    this->resize(newSize);
 }

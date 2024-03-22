@@ -7,6 +7,10 @@
 GLWidget::~GLWidget()
 {
     makeCurrent();
+
+    //int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
+    //shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
+
     vbo.destroy();
     delete shaderManager;
     doneCurrent();
@@ -14,6 +18,8 @@ GLWidget::~GLWidget()
 
 void GLWidget::loadTexture(const QString &filename)
 {
+    auto oldTexture = this->texture;
+
     texture = new QOpenGLTexture(QImage(filename).mirrored());
     texture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
     texture->setMagnificationFilter(QOpenGLTexture::Linear);
@@ -21,7 +27,20 @@ void GLWidget::loadTexture(const QString &filename)
     if (texture)
     {
         qDebug() << "Texture loaded successfully";
+        this->show();
+        this->resize(texture->width(), texture->height());
         this->update();
+
+        if (oldTexture)
+            oldTexture->release(); // delete the old texture
+
+        emit imageSizeChanged(texture->width(), texture->height());
+    }
+    else
+    {
+        qDebug() << "Texture loading failed";
+        if (oldTexture)
+            texture = oldTexture; // load the old texture
     }
 }
 
@@ -39,28 +58,29 @@ void GLWidget::paintGL()
 
     if (texture) {
         texture->bind();
-        shaderManager->getShader(ShaderName::Base)->setUniformValue("texture", 0);
+        shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
     }
 
     vbo.bind();
+    // delete later
     int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
     shaderManager->getShader(ShaderName::Base)->enableAttributeArray(vertexLocation);
     shaderManager->getShader(ShaderName::Base)->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+    // delete later
     shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
     vbo.release();
-    if (texture)
-        texture->release();
 }
 
 void GLWidget::makeObject()
 {
     GLfloat vertices[] = {
         -1.0f, -1.0f,
-        1.0f, -1.0f,
-        1.0f, 1.0f,
-        -1.0f, 1.0f
+         1.0f, -1.0f,
+         1.0f,  1.0f,
+        -1.0f,  1.0f
     };
 
     vbo.create();
@@ -69,6 +89,10 @@ void GLWidget::makeObject()
 
     QOpenGLShaderProgram* currentShader = shaderManager->getShader(ShaderName::Base);
     glUseProgram(currentShader->programId());
+
+    //int vertexLocation = currentShader->attributeLocation("vertex");
+    //currentShader->enableAttributeArray(vertexLocation);
+    //currentShader->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
 }
 
 QSize GLWidget::minimumSizeHint() const

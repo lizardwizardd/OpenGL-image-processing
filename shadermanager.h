@@ -19,6 +19,7 @@ public:
     ~ShaderManager();
 
     QOpenGLShaderProgram *getShader(ShaderName shaderName);
+    void setInt(ShaderName shader, char* name, int value);
 
 private:
     std::unordered_map<ShaderName, QOpenGLShaderProgram*> shaders;

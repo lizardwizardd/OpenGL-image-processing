@@ -24,6 +24,9 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
+signals:
+    void imageSizeChanged(int width, int height);
+
 protected:
     void initializeGL() override;
     void paintGL() override;
