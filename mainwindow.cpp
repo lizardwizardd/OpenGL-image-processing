@@ -19,9 +19,9 @@ MainWindow::MainWindow()
     connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     setMenuBar(menuBar);
 
-    glWidget = new GLWidget(this);
-    connect(glWidget, &GLWidget::imageSizeChanged, this, &MainWindow::resizeToImage);
-    setCentralWidget(glWidget);
+    glWidget = new GLWidget();
+    connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
+    connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
 }
 
 void MainWindow::chooseFile()
@@ -42,4 +42,11 @@ void MainWindow::resizeToImage(int width, int height)
 {
     QSize newSize(width, height); // TODO: auto margin
     this->resize(newSize);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (glWidget)
+        glWidget->close();
+    event->accept();
 }

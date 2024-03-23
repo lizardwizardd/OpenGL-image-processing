@@ -16,6 +16,7 @@ public:
 private slots:
     void chooseFile();
     void resizeToImage(int width, int height);
+    void closeEvent(QCloseEvent *event);
 private:
     GLWidget* glWidget;
 };

@@ -20,6 +20,7 @@ public:
 
     QOpenGLShaderProgram *getShader(ShaderName shaderName);
     void setInt(ShaderName shader, char* name, int value);
+    void setFloat(ShaderName shader, char *name, float value);
 
 private:
     std::unordered_map<ShaderName, QOpenGLShaderProgram*> shaders;

@@ -25,6 +25,12 @@ void ShaderManager::setInt(ShaderName shader, char *name, int value)
     shaders.at(shader)->setUniformValue(name, value);
 }
 
+void ShaderManager::setFloat(ShaderName shader, char *name, float value)
+{
+    qDebug() << "Setting float " << value;
+    shaders.at(shader)->setUniformValue(name, value);
+}
+
 void ShaderManager::initializeContainers()
 {
     addShader(ShaderName::Base,

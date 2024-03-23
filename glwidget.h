@@ -2,27 +2,28 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-#include <QOpenGLWidget>
+#include <QOpenGLWindow>
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
+#include <QResizeEvent>
 
 #include "shadermanager.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 
-class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
+class GLWidget : public QOpenGLWindow, protected QOpenGLFunctions
 {
     Q_OBJECT
 
 public:
-    using QOpenGLWidget::QOpenGLWidget;
+    using QOpenGLWindow::QOpenGLWindow;
     ~GLWidget();
 
     void loadTexture(const QString &filename);
 
-    QSize minimumSizeHint() const override;
-    QSize sizeHint() const override;
+    //QSize minimumSizeHint() const override;
+    //QSize sizeHint() const override;
 
 signals:
     void imageSizeChanged(int width, int height);
@@ -30,12 +31,18 @@ signals:
 protected:
     void initializeGL() override;
     void paintGL() override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
-    void makeObject();
+    float textureAspectRatio = 0.0f;
     QOpenGLTexture* texture = nullptr;
     ShaderManager* shaderManager;
     QOpenGLBuffer vbo;
+    QVector<GLfloat> vertices;
+
+    void initializeObject();
+    void initializeBuffers();
+    void updateVertices(QVector<GLfloat>& newVertices);
 };
 
 #endif // GLWIDGET_H

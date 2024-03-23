@@ -4,6 +4,7 @@
 #include <QOpenGLTexture>
 #include <QDebug>
 
+
 GLWidget::~GLWidget()
 {
     makeCurrent();
@@ -18,29 +19,33 @@ GLWidget::~GLWidget()
 
 void GLWidget::loadTexture(const QString &filename)
 {
-    auto oldTexture = this->texture;
+    this->show(); // create context
 
-    texture = new QOpenGLTexture(QImage(filename).mirrored());
-    texture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
-    texture->setMagnificationFilter(QOpenGLTexture::Linear);
+    QOpenGLTexture* newTexture = new QOpenGLTexture(QImage(filename).mirrored());
+    newTexture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
+    newTexture->setMagnificationFilter(QOpenGLTexture::Linear);
 
-    if (texture)
+    if (newTexture)
     {
+        if (this->texture) // if replacing an existing texture
+        {
+            this->texture->release();
+            delete this->texture;
+        }
+        this->texture = newTexture;
         qDebug() << "Texture loaded successfully";
-        this->show();
         this->resize(texture->width(), texture->height());
+        this->textureAspectRatio = (float)texture->width() / texture->height();
         this->update();
-
-        if (oldTexture)
-            oldTexture->release(); // delete the old texture
 
         emit imageSizeChanged(texture->width(), texture->height());
     }
-    else
+    else // load failed, go back
     {
         qDebug() << "Texture loading failed";
-        if (oldTexture)
-            texture = oldTexture; // load the old texture
+        delete newTexture;
+        if (!texture) // if texture didn't exist (first load)
+            this->hide();
     }
 }
 
@@ -48,7 +53,8 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
     shaderManager = new ShaderManager();
-    makeObject();
+    initializeBuffers();
+    initializeObject();
 }
 
 void GLWidget::paintGL()
@@ -61,6 +67,9 @@ void GLWidget::paintGL()
         shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
     }
 
+    //glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+
     vbo.bind();
     // delete later
     int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
@@ -72,29 +81,73 @@ void GLWidget::paintGL()
     // delete later
     shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
     vbo.release();
+
 }
 
-void GLWidget::makeObject()
+void GLWidget::resizeEvent(QResizeEvent *event)
 {
-    GLfloat vertices[] = {
-        -1.0f, -1.0f,
-         1.0f, -1.0f,
-         1.0f,  1.0f,
-        -1.0f,  1.0f
+    QOpenGLWindow::resizeEvent(event);
+
+    float windowAspectRatio = (float)(event->size().width()) / event->size().height();
+    //qDebug() << "Resizing. New AR: " << windowAspectRatio << "Texture AR: " << textureAspectRatio;
+    float objectWidth, objectHeight;
+
+    if (windowAspectRatio > textureAspectRatio)
+    {
+        objectWidth = (float)textureAspectRatio / windowAspectRatio;
+        objectHeight = 1.0f;
+    }
+    else
+    {
+        objectWidth = 1.0f;
+        objectHeight = (float)windowAspectRatio / textureAspectRatio;
+    }
+
+    QVector<GLfloat> vertices = {
+        -objectWidth, -objectHeight,
+        objectWidth, -objectHeight,
+        objectWidth,  objectHeight,
+        -objectWidth,  objectHeight
     };
 
-    vbo.create();
-    vbo.bind();
-    vbo.allocate(vertices, sizeof(vertices));
+    shaderManager->setFloat(ShaderName::Base, (char*)"objectAspectRatio", textureAspectRatio);
+    shaderManager->setFloat(ShaderName::Base, (char*)"windowAspectRatio", windowAspectRatio);
+    updateVertices(vertices);
+}
 
+void GLWidget::updateVertices(QVector<GLfloat>& newVertices)
+{
+    vertices = newVertices; //
+
+    vbo.bind();
+    vbo.write(0, vertices.constData(), vertices.size() * sizeof(GLfloat));
+    vbo.release();
+
+    update();
+}
+
+void GLWidget::initializeObject()
+{
     QOpenGLShaderProgram* currentShader = shaderManager->getShader(ShaderName::Base);
     glUseProgram(currentShader->programId());
 
-    //int vertexLocation = currentShader->attributeLocation("vertex");
-    //currentShader->enableAttributeArray(vertexLocation);
-    //currentShader->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
+    int vertexLocation = currentShader->attributeLocation("vertex");
+    currentShader->enableAttributeArray(vertexLocation);
+    currentShader->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
 }
 
+void GLWidget::initializeBuffers()
+{
+    vbo.create();
+    vbo.bind();
+    vertices = {-1.0f,  1.0f,
+                -1.0f, -1.0f,
+                 1.0f, -1.0f,
+                 1.0f,  1.0f };
+    vbo.allocate(vertices.constData(), vertices.size() * sizeof(GLfloat));
+}
+
+/*
 QSize GLWidget::minimumSizeHint() const
 {
     return QSize(100, 100);
@@ -104,3 +157,4 @@ QSize GLWidget::sizeHint() const
 {
     return QSize(400, 400);
 }
+*/
