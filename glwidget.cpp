@@ -5,10 +5,16 @@
 #include <QDebug>
 
 
+GLWidget::GLWidget(QMainWindow *parent) :
+    QOpenGLWindow()
+{
+    this->parent = parent;
+}
+
 GLWidget::~GLWidget()
 {
+    qDebug() << "GLWidget testructor invoked";
     makeCurrent();
-
     //int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
     //shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
 
@@ -147,14 +153,16 @@ void GLWidget::initializeBuffers()
     vbo.allocate(vertices.constData(), vertices.size() * sizeof(GLfloat));
 }
 
-/*
+
 QSize GLWidget::minimumSizeHint() const
 {
     return QSize(100, 100);
 }
 
-QSize GLWidget::sizeHint() const
+void GLWidget::closeEvent(QCloseEvent *event)
 {
-    return QSize(400, 400);
+    if (parent)
+        parent->close();
+    event->accept();
 }
-*/
+

@@ -6,6 +6,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QResizeEvent>
+#include <QMainWindow>
 
 #include "shadermanager.h"
 
@@ -17,11 +18,13 @@ class GLWidget : public QOpenGLWindow, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
+    GLWidget(QMainWindow* parent = nullptr);
     using QOpenGLWindow::QOpenGLWindow;
     ~GLWidget();
 
     void loadTexture(const QString &filename);
 
+    QSize minimumSizeHint() const;
     //QSize minimumSizeHint() const override;
     //QSize sizeHint() const override;
 
@@ -39,10 +42,13 @@ private:
     ShaderManager* shaderManager;
     QOpenGLBuffer vbo;
     QVector<GLfloat> vertices;
+    QMainWindow* parent = nullptr;
 
     void initializeObject();
     void initializeBuffers();
     void updateVertices(QVector<GLfloat>& newVertices);
+    void closeEvent(QCloseEvent *event) override;
+
 };
 
 #endif // GLWIDGET_H

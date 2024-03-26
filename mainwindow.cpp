@@ -19,9 +19,15 @@ MainWindow::MainWindow()
     connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     setMenuBar(menuBar);
 
-    glWidget = new GLWidget();
+    glWidget = new GLWidget(this);
+    glWidget->setMinimumSize(QSize(200, 200));
     connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
     connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
+}
+
+MainWindow::~MainWindow()
+{
+    delete glWidget;
 }
 
 void MainWindow::chooseFile()
