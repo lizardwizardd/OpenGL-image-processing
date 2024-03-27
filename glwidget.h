@@ -39,7 +39,7 @@ protected:
 private:
     float textureAspectRatio = 0.0f;
     QOpenGLTexture* texture = nullptr;
-    ShaderManager* shaderManager;
+    ShaderManager* shaderManager = nullptr;
     QOpenGLBuffer vbo;
     QVector<GLfloat> vertices;
     QMainWindow* parent = nullptr;

@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QDebug>
+#include <QElapsedTimer>
 
 
 GLWidget::GLWidget(QMainWindow *parent) :
@@ -16,18 +17,22 @@ GLWidget::~GLWidget()
 {
     qDebug() << "GLWidget destructor invoked";
     makeCurrent();
-    //int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
-    //shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
-    int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
-    shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
+
     vbo.release();
     vbo.destroy();
-    delete shaderManager;
+    if (shaderManager)
+    {
+        shaderManager->disableAttributeArray(ShaderName::Base, "vertex");
+        delete shaderManager;
+    }
     doneCurrent();
 }
 
 void GLWidget::loadTexture(const QString &filename)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     this->show(); // create context
 
     QOpenGLTexture* newTexture = new QOpenGLTexture(QImage(filename).mirrored());
@@ -59,6 +64,9 @@ void GLWidget::loadTexture(const QString &filename)
         if (!texture) // if texture didn't exist (first load)
             this->hide();
     }
+
+    qint64 elapsedMs = timer.elapsed();
+    qDebug() << "loadTexture:" << elapsedMs << "ms";
 }
 
 void GLWidget::initializeGL()
@@ -72,22 +80,16 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
+    QElapsedTimer timer;
+    timer.start();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(shaderManager->getShader(ShaderName::Base)->programId());
-
-    // TODO: move this part to loadTexture
-
-    //vbo.bind();
-    // delete later
-    //int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
-    //shaderManager->getShader(ShaderName::Base)->enableAttributeArray(vertexLocation);
-    //shaderManager->getShader(ShaderName::Base)->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
+    glUseProgram(shaderManager->getProgramId(ShaderName::Base));
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    // delete later
-    //shaderManager->getShader(ShaderName::Base)->disableAttributeArray(vertexLocation);
-    //vbo.release();
+    qint64 elapsedMs = timer.elapsed();
+    qDebug() << "paintGL:" << elapsedMs << "ms";
 }
 
 void GLWidget::resizeEvent(QResizeEvent *event)
@@ -123,12 +125,8 @@ void GLWidget::resizeEvent(QResizeEvent *event)
 
 void GLWidget::updateVertices(QVector<GLfloat>& newVertices)
 {
-    vertices = newVertices; //
-
-    //vbo.bind();
+    vertices = newVertices;
     vbo.write(0, vertices.constData(), vertices.size() * sizeof(GLfloat));
-    //vbo.release();
-
     update();
 }
 
@@ -153,11 +151,8 @@ void GLWidget::initializeBuffers()
                  1.0f, -1.0f,
                  1.0f,  1.0f};
     vbo.allocate(vertices.constData(), vertices.size() * sizeof(GLfloat));
-    // new
-    glUseProgram(shaderManager->getShader(ShaderName::Base)->programId());
-    int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
-    shaderManager->getShader(ShaderName::Base)->enableAttributeArray(vertexLocation);
-    shaderManager->getShader(ShaderName::Base)->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
+    glUseProgram(shaderManager->getProgramId(ShaderName::Base));
+    shaderManager->setAttributeBuffer(ShaderName::Base, "vertex", GL_FLOAT, 0, 2, 0);
 }
 
 

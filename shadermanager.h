@@ -18,9 +18,16 @@ public:
     ShaderManager();
     ~ShaderManager();
 
-    QOpenGLShaderProgram *getShader(ShaderName shaderName);
+    GLuint getProgramId(ShaderName shader);
+    void disableAttributeArray(ShaderName shader, const char* attribName);
+    void setAttributeBuffer(ShaderName shader, const char* attribName,
+                            GLenum type, int offset, int tupleSize, int stride);
+
+    // Uniform setters
     void setInt(ShaderName shader, char* name, int value);
     void setFloat(ShaderName shader, char *name, float value);
+
+    QOpenGLShaderProgram *getShader(ShaderName shaderName);
 
 private:
     std::unordered_map<ShaderName, QOpenGLShaderProgram*> shaders;

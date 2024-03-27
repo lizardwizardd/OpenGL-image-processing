@@ -12,12 +12,36 @@ ShaderManager::~ShaderManager()
         delete shaders.at(pair.first);
 }
 
+GLuint ShaderManager::getProgramId(ShaderName shader)
+{
+    return getShader(shader)->programId();
+}
+
+void ShaderManager::disableAttributeArray(ShaderName shader, const char* attribName)
+{
+    int attribLocation = getShader(shader)->attributeLocation(attribName);
+    getShader(shader)->disableAttributeArray(attribLocation);
+}
+
+void ShaderManager::setAttributeBuffer(ShaderName shader, const char *attribName,
+                              GLenum type, int offset, int tupleSize, int stride)
+{
+    // TODO : encapsulate
+    int attribLocation = getShader(shader)->attributeLocation(attribName);
+    getShader(shader)->enableAttributeArray(attribLocation);
+    getShader(shader)->setAttributeBuffer(attribLocation, type, offset,
+                                          tupleSize, stride);
+}
+
 QOpenGLShaderProgram* ShaderManager::getShader(ShaderName shaderName)
 {
     if (shaders.count(shaderName))
         return shaders.at(shaderName);
     else
+    {
+        qDebug() << "getShader: no such shader in shader map";
         return nullptr;
+    }
 }
 
 void ShaderManager::setInt(ShaderName shader, char *name, int value)
