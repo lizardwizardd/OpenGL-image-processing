@@ -2,6 +2,7 @@
 #include "glwidget.h"
 
 #include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
 #include <QOpenGLTexture>
 #include <QDebug>
 #include <QElapsedTimer>
@@ -11,6 +12,7 @@ GLWidget::GLWidget(QMainWindow *parent) :
     QOpenGLWindow()
 {
     this->parent = parent;
+
 }
 
 GLWidget::~GLWidget()
@@ -18,8 +20,12 @@ GLWidget::~GLWidget()
     qDebug() << "GLWidget destructor invoked";
     makeCurrent();
 
+    vao.release();
+    vao.destroy();
+
     vbo.release();
     vbo.destroy();
+
     if (shaderManager)
     {
         shaderManager->disableAttributeArray(ShaderName::Base, "vertex");
@@ -74,22 +80,15 @@ void GLWidget::initializeGL()
     initializeOpenGLFunctions();
     shaderManager = new ShaderManager();
     initializeBuffers();
-    initializeObject();
-    //glUseProgram(shaderManager->getShader(ShaderName::Base)->programId());
 }
 
 void GLWidget::paintGL()
 {
-    QElapsedTimer timer;
-    timer.start();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
 
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    qint64 elapsedMs = timer.elapsed();
-    qDebug() << "paintGL:" << elapsedMs << "ms";
 }
 
 void GLWidget::resizeEvent(QResizeEvent *event)
@@ -97,7 +96,6 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     QOpenGLWindow::resizeEvent(event);
 
     float windowAspectRatio = (float)(event->size().width()) / event->size().height();
-    //qDebug() << "Resizing. New AR: " << windowAspectRatio << "Texture AR: " << textureAspectRatio;
     float objectWidth, objectHeight;
 
     if (windowAspectRatio > textureAspectRatio)
@@ -111,11 +109,11 @@ void GLWidget::resizeEvent(QResizeEvent *event)
         objectHeight = (float)windowAspectRatio / textureAspectRatio;
     }
 
-    QVector<GLfloat> vertices = {
-        -objectWidth, -objectHeight,
-         objectWidth, -objectHeight,
-         objectWidth,  objectHeight,
-        -objectWidth,  objectHeight
+    QVector<float> vertices = {
+       -objectWidth, -objectHeight,
+        objectWidth, -objectHeight,
+        objectWidth,  objectHeight,
+       -objectWidth,  objectHeight
     };
 
     shaderManager->setFloat(ShaderName::Base, (char*)"objectAspectRatio", textureAspectRatio);
@@ -123,33 +121,25 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     updateVertices(vertices);
 }
 
-void GLWidget::updateVertices(QVector<GLfloat>& newVertices)
+void GLWidget::updateVertices(QVector<float>& newVertices)
 {
     vertices = newVertices;
     vbo.write(0, vertices.constData(), vertices.size() * sizeof(GLfloat));
     update();
 }
 
-void GLWidget::initializeObject()
-{
-    //QOpenGLShaderProgram* currentShader = shaderManager->getShader(ShaderName::Base);
-    //glUseProgram(currentShader->programId());
-    //int vertexLocation = shaderManager->getShader(ShaderName::Base)->attributeLocation("vertex");
-    //shaderManager->getShader(ShaderName::Base)->enableAttributeArray(vertexLocation);
-    //shaderManager->getShader(ShaderName::Base)->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
-    //int vertexLocation = currentShader->attributeLocation("vertex");
-    //currentShader->enableAttributeArray(vertexLocation);
-    //currentShader->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 0);
-}
-
 void GLWidget::initializeBuffers()
 {
+    vao.create();
+    vao.bind();
+
     vbo.create();
     vbo.bind();
     vertices = {-1.0f,  1.0f,
                 -1.0f, -1.0f,
                  1.0f, -1.0f,
                  1.0f,  1.0f};
+
     vbo.allocate(vertices.constData(), vertices.size() * sizeof(GLfloat));
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setAttributeBuffer(ShaderName::Base, "vertex", GL_FLOAT, 0, 2, 0);

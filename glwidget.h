@@ -3,6 +3,7 @@
 #define GLWIDGET_H
 
 #include <QOpenGLWindow>
+#include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QResizeEvent>
@@ -25,8 +26,6 @@ public:
     void loadTexture(const QString &filename);
 
     QSize minimumSizeHint() const;
-    //QSize minimumSizeHint() const override;
-    //QSize sizeHint() const override;
 
 signals:
     void imageSizeChanged(int width, int height);
@@ -40,13 +39,15 @@ private:
     float textureAspectRatio = 0.0f;
     QOpenGLTexture* texture = nullptr;
     ShaderManager* shaderManager = nullptr;
+    QOpenGLVertexArrayObject vao;
     QOpenGLBuffer vbo;
-    QVector<GLfloat> vertices;
+
+    QVector<float> vertices;
+
     QMainWindow* parent = nullptr;
 
-    void initializeObject();
     void initializeBuffers();
-    void updateVertices(QVector<GLfloat>& newVertices);
+    void updateVertices(QVector<float>& newVertices);
     void closeEvent(QCloseEvent *event) override;
 
 };
