@@ -12,7 +12,6 @@ GLWidget::GLWidget(QMainWindow *parent) :
     QOpenGLWindow()
 {
     this->parent = parent;
-
 }
 
 GLWidget::~GLWidget()
@@ -45,18 +44,39 @@ void GLWidget::loadTexture(const QString &filename)
     newTexture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
     newTexture->setMagnificationFilter(QOpenGLTexture::Linear);
 
+    QOpenGLTexture* newColorBuffer = new QOpenGLTexture(QImage(filename).mirrored());
+    newColorBuffer->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
+    newColorBuffer->setMagnificationFilter(QOpenGLTexture::Linear);
+
     if (newTexture)
     {
         if (this->texture) // if replacing an existing texture
         {
-            this->texture->release();
+            ///texture->release();
             delete this->texture;
+            delete this->colorBuffer;
         }
         this->texture = newTexture;
-        qDebug() << "Texture loaded successfully";
+        this->colorBuffer = newColorBuffer;
 
-        texture->bind();
+        glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
         shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
+
+        glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
+        shaderManager->setInt(ShaderName::Base, (char*)"screenTexture", 0);
+
+
+        if (fbo)
+            delete fbo;
+        fbo = new QOpenGLFramebufferObject(
+            colorBuffer->width(), colorBuffer->height(), GL_TEXTURE_2D);
+        fbo->bind();
+        GLuint colorBufId = colorBuffer->textureId();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, colorBufId, 0);
+        if (!(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE))
+            qDebug() << "Framebuffer not complete";
+
 
         this->resize(texture->width(), texture->height());
         this->textureAspectRatio = (float)texture->width() / texture->height();
@@ -67,6 +87,7 @@ void GLWidget::loadTexture(const QString &filename)
     {
         qDebug() << "Texture loading failed";
         delete newTexture;
+        delete newColorBuffer;
         if (!texture) // if texture didn't exist (first load)
             this->hide();
     }
@@ -84,10 +105,23 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
-    glUseProgram(shaderManager->getProgramId(ShaderName::Base));
+    fbo->bind(); // rendering to tmp fbo
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+    texture->bind();
+
+    glUseProgram(shaderManager->getProgramId(ShaderName::Base));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    // rendering to original fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
+    colorBuffer->bind();
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -116,8 +150,14 @@ void GLWidget::resizeEvent(QResizeEvent *event)
        -objectWidth,  objectHeight
     };
 
+    glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setFloat(ShaderName::Base, (char*)"objectAspectRatio", textureAspectRatio);
     shaderManager->setFloat(ShaderName::Base, (char*)"windowAspectRatio", windowAspectRatio);
+
+    glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
+    shaderManager->setFloat(ShaderName::Correction, (char*)"objectAspectRatio", textureAspectRatio);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"windowAspectRatio", windowAspectRatio);
+
     updateVertices(vertices);
 }
 
@@ -135,14 +175,17 @@ void GLWidget::initializeBuffers()
 
     vbo.create();
     vbo.bind();
-    vertices = {-1.0f,  1.0f,
-                -1.0f, -1.0f,
-                 1.0f, -1.0f,
-                 1.0f,  1.0f};
+    vertices = {
+        -1.0f,  1.0f,
+        -1.0f, -1.0f,
+         1.0f, -1.0f,
+         1.0f,  1.0f};
 
     vbo.allocate(vertices.constData(), vertices.size() * sizeof(GLfloat));
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setAttributeBuffer(ShaderName::Base, "vertex", GL_FLOAT, 0, 2, 0);
+    glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
+    shaderManager->setAttributeBuffer(ShaderName::Correction, "vertex", GL_FLOAT, 0, 2, 0);
 }
 
 

@@ -4,6 +4,7 @@
 
 #include <QOpenGLWindow>
 #include <QOpenGLVertexArrayObject>
+#include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QResizeEvent>
@@ -37,14 +38,17 @@ protected:
 
 private:
     float textureAspectRatio = 0.0f;
-    QOpenGLTexture* texture = nullptr;
     ShaderManager* shaderManager = nullptr;
+    QMainWindow* parent = nullptr;
+
+    QOpenGLTexture* texture = nullptr;
+    QOpenGLTexture* colorBuffer = nullptr;
+    QOpenGLFramebufferObject* fbo = nullptr;
     QOpenGLVertexArrayObject vao;
     QOpenGLBuffer vbo;
+    //QOpenGLBuffer vboStatic;
 
     QVector<float> vertices;
-
-    QMainWindow* parent = nullptr;
 
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);

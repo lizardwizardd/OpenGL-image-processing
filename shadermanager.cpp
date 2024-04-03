@@ -57,10 +57,17 @@ void ShaderManager::setFloat(ShaderName shader, char *name, float value)
 
 void ShaderManager::initializeContainers()
 {
+    // TODO: iterate through enum
+
     addShader(ShaderName::Base,
               "F:/Programming/OpenGL-image-processing/shaders/base.vert",
               "F:/Programming/OpenGL-image-processing/shaders/base.frag");
     shaderState.at(ShaderName::Base) = true;
+
+    addShader(ShaderName::Correction,
+              "F:/Programming/OpenGL-image-processing/shaders/correction.vert",
+              "F:/Programming/OpenGL-image-processing/shaders/correction.frag");
+    shaderState.at(ShaderName::Correction) = true;
 }
 
 void ShaderManager::addShader(ShaderName shaderName, const QString &vertexPath,

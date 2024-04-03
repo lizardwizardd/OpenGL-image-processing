@@ -9,6 +9,7 @@
 enum class ShaderName
 {
     Base,
+    Correction,
     Count
 };
 

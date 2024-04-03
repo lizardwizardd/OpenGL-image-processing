@@ -23,6 +23,8 @@ set(PROJECT_SOURCES
 
         shaders/base.vert
         shaders/base.frag
+        shaders/correction.frag
+        shaders/correction.vert
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
