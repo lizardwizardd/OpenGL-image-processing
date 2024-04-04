@@ -5,7 +5,7 @@
 #include <QOpenGLWindow>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFramebufferObject>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLBuffer>
 #include <QResizeEvent>
 #include <QMainWindow>
@@ -15,7 +15,7 @@
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 
-class GLWidget : public QOpenGLWindow, protected QOpenGLFunctions
+class GLWidget : public QOpenGLWindow, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 
@@ -41,14 +41,14 @@ private:
     ShaderManager* shaderManager = nullptr;
     QMainWindow* parent = nullptr;
 
-    QOpenGLTexture* texture = nullptr;
-    QOpenGLTexture* colorBuffer = nullptr;
-    QOpenGLFramebufferObject* fbo = nullptr;
-    QOpenGLVertexArrayObject vao;
-    QOpenGLBuffer vbo;
-    //QOpenGLBuffer vboStatic;
+    GLuint vao; // Vertex Array Object
+    GLuint vbo; // Vertex Buffer Object
+    GLuint textureID; // Texture ID
 
-    QVector<float> vertices;
+    QOpenGLTexture* texture = nullptr;
+
+    GLuint fbo; // Framebuffer Object
+    GLuint textureColorbuffer; // Texture for FBO color attachment
 
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);

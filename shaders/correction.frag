@@ -1,8 +1,12 @@
 #version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
-in vec2 texCoord;
+
 void main()
 {
-    gl_FragColor = 1 - texture2D(screenTexture, texCoord);
+    vec3 col = texture2D(screenTexture, TexCoords).rgb;
+    FragColor = vec4(1 - col, 1.0);
 }

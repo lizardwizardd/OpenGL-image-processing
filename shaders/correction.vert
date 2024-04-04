@@ -1,27 +1,11 @@
 #version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTexCoords;
 
-in vec2 vertex;
-out vec2 texCoord;
-
-uniform float objectAspectRatio;
-uniform float windowAspectRatio;
+out vec2 TexCoords;
 
 void main()
 {
-    vec2 scaledVertex = vertex;
-
-    // Window stretched in width
-    if (windowAspectRatio > objectAspectRatio)
-    {
-        scaledVertex.x *= (windowAspectRatio / objectAspectRatio);
-    }
-    else // window stretched in height
-    {
-        scaledVertex.y *= (objectAspectRatio / windowAspectRatio);
-    }
-
-    // Transform to [0.0 - 1.0]
-    texCoord = (scaledVertex + 1.0) / 2.0;
-
-    gl_Position = vec4(vertex, 0.0, 1.0);
+    TexCoords = aTexCoords;
+    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
 }
