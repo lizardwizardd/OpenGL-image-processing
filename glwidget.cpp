@@ -92,27 +92,75 @@ void GLWidget::paintGL()
     // First Pass: Render to FBO using the first shader
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(1.0f, 0.0f, 1.0f, 0.5f);
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID);
     glBindVertexArray(vao);
+
+    glViewport(0, 0, viewportWidth, viewportHeight);
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Second Pass: Render to screen using the second shader
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
     glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.0f, 1.0f, 1.0f, 0.5f);
     glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
     shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glBindVertexArray(vao); // quadvao
+    glBindVertexArray(vao);
+
+    glViewport(viewportBottomLeftX, viewportBottomLeftY, viewportWidth, viewportHeight);
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void GLWidget::resizeEvent(QResizeEvent *event)
 {
     QOpenGLWindow::resizeEvent(event);
+
+    if (!texture)
+        return;
+
+    // Get new window size
+    int widthOfFramebuffer = event->size().width();
+    int heightOfFramebuffer = event->size().height();
+
+    // Calculate new viewport dimensions and position
+    float requiredViewportHeight = widthOfFramebuffer * (1.0f / textureAspectRatio);
+
+    if (requiredViewportHeight > heightOfFramebuffer)
+    {
+        float requiredViewportWidth = heightOfFramebuffer * textureAspectRatio;
+        viewportWidth = (int)requiredViewportWidth;
+        viewportHeight = heightOfFramebuffer;
+        float verticalBarWidth = (widthOfFramebuffer - viewportWidth) / 2.0f;
+        viewportBottomLeftX = (int)verticalBarWidth;
+    }
+    else
+    {
+        viewportWidth = widthOfFramebuffer;
+        viewportHeight = (int)requiredViewportHeight;
+        float horizontalBarHeight = (heightOfFramebuffer - viewportHeight) / 2.0f;
+        viewportBottomLeftY = (int)horizontalBarHeight;
+    }
+
+    float scaleDiff = (float)viewportHeight / texture->height();
+    qDebug() << "Height scale diff:" << scaleDiff;
+
+    glUseProgram(shaderManager->getProgramId(ShaderName::Base));
+    shaderManager->setFloat(ShaderName::Base, (char*)"scaleDiff", scaleDiff);
+
+    glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
+    shaderManager->setFloat(ShaderName::Correction, (char*)"scaleDiff", scaleDiff);
+}
+
+void GLWidget::resizeGL(int w, int h)
+{
+    qDebug() << "resizegl is called";
 }
 
 void GLWidget::updateVertices(QVector<float>& newVertices)

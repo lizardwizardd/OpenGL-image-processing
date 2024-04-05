@@ -3,8 +3,6 @@
 #define GLWIDGET_H
 
 #include <QOpenGLWindow>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLBuffer>
 #include <QResizeEvent>
@@ -35,20 +33,26 @@ protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeEvent(QResizeEvent *event) override;
+    void resizeGL(int w, int h) override;
 
 private:
     float textureAspectRatio = 0.0f;
     ShaderManager* shaderManager = nullptr;
     QMainWindow* parent = nullptr;
 
-    GLuint vao; // Vertex Array Object
-    GLuint vbo; // Vertex Buffer Object
-    GLuint textureID; // Texture ID
+    GLuint vao;
+    GLuint vbo;
+    GLuint textureID;
 
     QOpenGLTexture* texture = nullptr;
 
-    GLuint fbo; // Framebuffer Object
-    GLuint textureColorbuffer; // Texture for FBO color attachment
+    GLuint fbo;
+    GLuint textureColorbuffer;
+
+    int viewportWidth = -1;
+    int viewportHeight = -1;
+    int viewportBottomLeftX = 0;
+    int viewportBottomLeftY = 0;
 
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);
