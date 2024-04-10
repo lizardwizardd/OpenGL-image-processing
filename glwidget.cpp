@@ -92,12 +92,11 @@ void GLWidget::paintGL()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // First Pass: Render to FBO using the first shader
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glBindVertexArray(vaoStatic);
@@ -106,11 +105,10 @@ void GLWidget::paintGL()
     // Second Pass: Render to screen using the second shader
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
 
     glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
     shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 
     glBindVertexArray(vao);
@@ -144,15 +142,14 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     }
 
     QVector<float> vertices1 = {
-        -objectWidth,  objectHeight,    0.0f, 1.0f, // top left
-        -objectWidth, -objectHeight,    0.0f, 0.0f, // bottom left
-         objectWidth, -objectHeight,    1.0f, 0.0f, // bottom right
-         objectWidth,  objectHeight,    1.0f, 1.0f  // top right
+        -objectWidth,  objectHeight,    0.0f, 1.0f, // TL
+        -objectWidth, -objectHeight,    0.0f, 0.0f, // BL
+         objectWidth, -objectHeight,    1.0f, 0.0f, // BR
+         objectWidth,  objectHeight,    1.0f, 1.0f  // TR
     };
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices1.size(),
                                                         vertices1.data());
-    //updateVertices(vertices);
 
     QVector<float> vertices2 = {
         -1.0f,                   -1.0f + objectHeight * 2,  0.0f, 1.0f, // TL
@@ -170,13 +167,6 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     shaderManager->setFloat(ShaderName::Base, (char*)"scaleDiff", scaleDiff);
     glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
     shaderManager->setFloat(ShaderName::Correction, (char*)"scaleDiff", scaleDiff);
-
-    //glUseProgram(shaderManager->getProgramId(ShaderName::Base));
-    //shaderManager->setFloat(ShaderName::Base, (char*)"objectAspectRatio", textureAspectRatio);
-    //shaderManager->setFloat(ShaderName::Base, (char*)"windowAspectRatio", windowAspectRatio);
-    glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
-    shaderManager->setFloat(ShaderName::Correction, (char*)"objectAspectRatio", 0.1f);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"windowAspectRatio", 0.8f);
 }
 
 void GLWidget::updateVertices(QVector<float>& newVertices)
@@ -187,7 +177,6 @@ void GLWidget::updateVertices(QVector<float>& newVertices)
 
 void GLWidget::initializeBuffers()
 {
-    // Vertex data (positions and texture coordinates)
     float vertices[] = {
         // positions   // texture coords
         -1.0f,  1.0f,  0.0f, 1.0f, // top left
@@ -206,7 +195,7 @@ void GLWidget::initializeBuffers()
     // VBO STATIC
     glGenBuffers(1, &vboStatic);
     glBindBuffer(GL_ARRAY_BUFFER, vboStatic);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -221,7 +210,7 @@ void GLWidget::initializeBuffers()
     // VBO
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -235,6 +224,8 @@ void GLWidget::initializeBuffers()
 
     // Load and create texture
     glGenTextures(1, &textureID);
+
+    glActiveTexture(GL_TEXTURE0);
 }
 
 

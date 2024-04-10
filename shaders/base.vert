@@ -9,8 +9,5 @@ uniform float scaleDiff;
 void main()
 {
     gl_Position = vec4(aPos, 0.0f, 1.0f);
-    if (scaleDiff > 1)
-        texCoord = aTexCoord * scaleDiff;
-    else
-        texCoord = aTexCoord * scaleDiff;
+    texCoord = aTexCoord * scaleDiff;
 }
