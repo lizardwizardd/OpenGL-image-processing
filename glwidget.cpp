@@ -37,12 +37,29 @@ void GLWidget::loadTexture(const QString &filename)
     newTexture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
     newTexture->setMagnificationFilter(QOpenGLTexture::Linear);
 
+    bool needToDeallocate = false;
+    bool textureUpdated = false;
     if (newTexture)
     {
         if (this->texture) // if replacing an existing texture
-        {
-            delete this->texture;
-        }
+            needToDeallocate = true;
+        textureUpdated = true;
+    }
+    else // load failed, go back
+    {
+        qDebug() << "Texture loading failed";
+        delete newTexture;
+        if (!texture) // if texture didn't exist (first load)
+            this->QOpenGLWindow::hide();
+    }
+
+    if (needToDeallocate)
+    {
+        delete this->texture;
+    }
+
+    if (textureUpdated)
+    {
         this->texture = newTexture;
 
         // Bind texture
@@ -54,26 +71,26 @@ void GLWidget::loadTexture(const QString &filename)
         glGenTextures(1, &textureColorbuffer);
         glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newTexture->width(),
-                     newTexture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+              newTexture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D,textureColorbuffer, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             qDebug() << "Framebuffer not complete!";
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
 
         // Handle size change
-        this->QOpenGLWindow::resize(texture->width(), texture->height());
+        int windowW = texture->width();
+        int windowH = texture->height();
+
+        windowW = std::clamp(windowW, 150, 1820); // todo
+        windowH = std::clamp(windowH, 150, 1000); //
+
         this->textureAspectRatio = (float)texture->width() / texture->height();
-        emit imageSizeChanged(texture->width(), texture->height());
-    }
-    else // load failed, go back
-    {
-        qDebug() << "Texture loading failed";
-        delete newTexture;
-        if (!texture) // if texture didn't exist (first load)
-            this->QOpenGLWindow::hide();
+        this->QOpenGLWindow::resize(windowW, windowH);
+        emit imageSizeChanged(windowW, windowH);
     }
 
     qint64 elapsedMs = timer.elapsed();
@@ -161,8 +178,7 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices2.size(),
                                                         vertices2.data());
 
-    //float scaleDiff = (float)viewportHeight / texture->height();
-    qDebug() << "Height scale diff:" << scaleDiff;
+    //qDebug() << "Height scale diff:" << scaleDiff;
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setFloat(ShaderName::Base, (char*)"scaleDiff", scaleDiff);
     glUseProgram(shaderManager->getProgramId(ShaderName::Correction));

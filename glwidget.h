@@ -49,11 +49,6 @@ private:
     GLuint fbo;
     GLuint textureColorbuffer;
 
-    int viewportWidth = -1;
-    int viewportHeight = -1;
-    int viewportBottomLeftX = 0;
-    int viewportBottomLeftY = 0;
-
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);
     void closeEvent(QCloseEvent *event) override;
