@@ -16,7 +16,6 @@ QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 class GLWidget : public QOpenGLWindow, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
-
 public:
     GLWidget(QMainWindow* parent = nullptr);
     using QOpenGLWindow::QOpenGLWindow;
@@ -33,7 +32,6 @@ protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeEvent(QResizeEvent *event) override;
-    void resizeGL(int w, int h) override;
 
 private:
     float textureAspectRatio = 0.0f;
@@ -42,8 +40,10 @@ private:
 
     GLuint vao;
     GLuint vbo;
-    GLuint textureID;
+    GLuint vaoStatic;
+    GLuint vboStatic;
 
+    GLuint textureID;
     QOpenGLTexture* texture = nullptr;
 
     GLuint fbo;

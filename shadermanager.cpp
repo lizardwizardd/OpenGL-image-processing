@@ -1,5 +1,6 @@
 
 #include "shadermanager.h"
+#include <QOpenGLFunctions>
 
 ShaderManager::ShaderManager()
 {
@@ -17,17 +18,24 @@ GLuint ShaderManager::getProgramId(ShaderName shader)
     return getShader(shader)->programId();
 }
 
+void ShaderManager::useProgram(ShaderName shader)
+{
+    ///glUseProgram(getShader(shader)->programId());
+}
+
 void ShaderManager::disableAttributeArray(ShaderName shader, const char* attribName)
 {
     int attribLocation = getShader(shader)->attributeLocation(attribName);
+    if (attribLocation == -1)
+        qDebug() << attribName << "is not a valid attribute";
     getShader(shader)->disableAttributeArray(attribLocation);
 }
 
 void ShaderManager::setAttributeBuffer(ShaderName shader, const char *attribName,
                               GLenum type, int offset, int tupleSize, int stride)
 {
-    // TODO : encapsulate
     int attribLocation = getShader(shader)->attributeLocation(attribName);
+    qDebug() << attribName << "is not a valid attribute";
     getShader(shader)->enableAttributeArray(attribLocation);
     getShader(shader)->setAttributeBuffer(attribLocation, type, offset,
                                           tupleSize, stride);
@@ -57,8 +65,6 @@ void ShaderManager::setFloat(ShaderName shader, char *name, float value)
 
 void ShaderManager::initializeContainers()
 {
-    // TODO: iterate through enum
-
     addShader(ShaderName::Base,
               "F:/Programming/OpenGL-image-processing/shaders/base.vert",
               "F:/Programming/OpenGL-image-processing/shaders/base.frag");

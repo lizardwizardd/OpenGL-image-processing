@@ -20,6 +20,8 @@ set(PROJECT_SOURCES
         glwidget.h
         shadermanager.cpp
         shadermanager.h
+        eventfilter.cpp
+        eventfilter.h
 
         shaders/base.vert
         shaders/base.frag

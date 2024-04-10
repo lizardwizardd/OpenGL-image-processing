@@ -64,7 +64,7 @@ void GLWidget::loadTexture(const QString &filename)
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
 
         // Handle size change
-        this->resize(texture->width(), texture->height());
+        this->QOpenGLWindow::resize(texture->width(), texture->height());
         this->textureAspectRatio = (float)texture->width() / texture->height();
         emit imageSizeChanged(texture->width(), texture->height());
     }
@@ -73,7 +73,7 @@ void GLWidget::loadTexture(const QString &filename)
         qDebug() << "Texture loading failed";
         delete newTexture;
         if (!texture) // if texture didn't exist (first load)
-            this->hide();
+            this->QOpenGLWindow::hide();
     }
 
     qint64 elapsedMs = timer.elapsed();
@@ -89,32 +89,31 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // First Pass: Render to FBO using the first shader
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(1.0f, 0.0f, 1.0f, 0.5f);
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID);
-    glBindVertexArray(vao);
 
-    glViewport(0, 0, viewportWidth, viewportHeight);
-
+    glBindVertexArray(vaoStatic);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Second Pass: Render to screen using the second shader
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.0f, 1.0f, 1.0f, 0.5f);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+
     glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
     shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+
     glBindVertexArray(vao);
-
-    glViewport(viewportBottomLeftX, viewportBottomLeftY, viewportWidth, viewportHeight);
-
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -125,62 +124,69 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     if (!texture)
         return;
 
-    // Get new window size
-    int widthOfFramebuffer = event->size().width();
-    int heightOfFramebuffer = event->size().height();
+    float windowAspectRatio = (float)(event->size().width()) / event->size().height();
+    float objectWidth, objectHeight;
 
-    // Calculate new viewport dimensions and position
-    float requiredViewportHeight = widthOfFramebuffer * (1.0f / textureAspectRatio);
-
-    if (requiredViewportHeight > heightOfFramebuffer)
+    float scaleDiff;
+    if (windowAspectRatio > textureAspectRatio)
     {
-        float requiredViewportWidth = heightOfFramebuffer * textureAspectRatio;
-        viewportWidth = (int)requiredViewportWidth;
-        viewportHeight = heightOfFramebuffer;
-        float verticalBarWidth = (widthOfFramebuffer - viewportWidth) / 2.0f;
-        viewportBottomLeftX = (int)verticalBarWidth;
+        // Width stretched, horizontal bars
+        objectWidth = (float)textureAspectRatio / windowAspectRatio;
+        objectHeight = 1.0f;
+        scaleDiff = (float)event->size().height() / texture->height();
     }
     else
     {
-        viewportWidth = widthOfFramebuffer;
-        viewportHeight = (int)requiredViewportHeight;
-        float horizontalBarHeight = (heightOfFramebuffer - viewportHeight) / 2.0f;
-        viewportBottomLeftY = (int)horizontalBarHeight;
+        // Height stretched, vertical bars
+        objectWidth = 1.0f;
+        objectHeight = (float)windowAspectRatio / textureAspectRatio;
+        scaleDiff = (float)event->size().height() * objectHeight / texture->height();
     }
 
-    float scaleDiff = (float)viewportHeight / texture->height();
-    qDebug() << "Height scale diff:" << scaleDiff;
+    QVector<float> vertices1 = {
+        -objectWidth,  objectHeight,    0.0f, 1.0f, // top left
+        -objectWidth, -objectHeight,    0.0f, 0.0f, // bottom left
+         objectWidth, -objectHeight,    1.0f, 0.0f, // bottom right
+         objectWidth,  objectHeight,    1.0f, 1.0f  // top right
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices1.size(),
+                                                        vertices1.data());
+    //updateVertices(vertices);
 
+    QVector<float> vertices2 = {
+        -1.0f,                   -1.0f + objectHeight * 2,  0.0f, 1.0f, // TL
+        -1.0f,                   -1.0f,                     0.0f, 0.0f, // BL
+        -1.0f + objectWidth * 2, -1.0f,                     1.0f, 0.0f, // BR
+        -1.0f + objectWidth * 2, -1.0f + objectHeight * 2,  1.0f, 1.0f  // TR
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, vboStatic);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices2.size(),
+                                                        vertices2.data());
+
+    //float scaleDiff = (float)viewportHeight / texture->height();
+    qDebug() << "Height scale diff:" << scaleDiff;
     glUseProgram(shaderManager->getProgramId(ShaderName::Base));
     shaderManager->setFloat(ShaderName::Base, (char*)"scaleDiff", scaleDiff);
-
     glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
     shaderManager->setFloat(ShaderName::Correction, (char*)"scaleDiff", scaleDiff);
-}
 
-void GLWidget::resizeGL(int w, int h)
-{
-    qDebug() << "resizegl is called";
+    //glUseProgram(shaderManager->getProgramId(ShaderName::Base));
+    //shaderManager->setFloat(ShaderName::Base, (char*)"objectAspectRatio", textureAspectRatio);
+    //shaderManager->setFloat(ShaderName::Base, (char*)"windowAspectRatio", windowAspectRatio);
+    glUseProgram(shaderManager->getProgramId(ShaderName::Correction));
+    shaderManager->setFloat(ShaderName::Correction, (char*)"objectAspectRatio", 0.1f);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"windowAspectRatio", 0.8f);
 }
 
 void GLWidget::updateVertices(QVector<float>& newVertices)
 {
-
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * newVertices.size(), newVertices.data());
 }
 
 void GLWidget::initializeBuffers()
 {
-    // Create FBO
-    glGenFramebuffers(1, &fbo);
-    //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-    // Create VAO and VBO
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
     // Vertex data (positions and texture coordinates)
     float vertices[] = {
         // positions   // texture coords
@@ -189,15 +195,41 @@ void GLWidget::initializeBuffers()
          1.0f, -1.0f,  1.0f, 0.0f, // bottom right
          1.0f,  1.0f,  1.0f, 1.0f  // top right
     };
+
+    // FBO
+    glGenFramebuffers(1, &fbo);
+
+    // VAO STATIC
+    glGenVertexArrays(1, &vaoStatic);
+    glBindVertexArray(vaoStatic);
+
+    // VBO STATIC
+    glGenBuffers(1, &vboStatic);
+    glBindBuffer(GL_ARRAY_BUFFER, vboStatic);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // Set vertex attribute pointers
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)
+                                                   (2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // Unbind VAO and VBO
+    // VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    // VBO
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)
+                                                   (2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Unbind VAO and VBOs
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 

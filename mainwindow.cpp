@@ -1,5 +1,6 @@
 
 #include "mainwindow.h"
+#include "eventfilter.h"
 
 #include <QMenuBar>
 #include <QMenu>
@@ -20,9 +21,13 @@ MainWindow::MainWindow()
     setMenuBar(menuBar);
 
     glWidget = new GLWidget(this);
-    glWidget->setMinimumSize(QSize(200, 200));
+    glWidget->setMinimumSize(QSize(150, 150));
     connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
     connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
+
+    EventFilter* filter = new EventFilter(); // todo pass AR ptr
+    filter->target = glWidget;
+    glWidget->installEventFilter(filter); // todo delete
 }
 
 MainWindow::~MainWindow()

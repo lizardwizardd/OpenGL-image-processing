@@ -20,6 +20,7 @@ public:
     ~ShaderManager();
 
     GLuint getProgramId(ShaderName shader);
+    void useProgram(ShaderName shader);
     void disableAttributeArray(ShaderName shader, const char* attribName);
     void setAttributeBuffer(ShaderName shader, const char* attribName,
                             GLenum type, int offset, int tupleSize, int stride);
