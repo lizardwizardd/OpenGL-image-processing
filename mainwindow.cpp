@@ -20,7 +20,8 @@ MainWindow::MainWindow()
     setMenuBar(menuBar);
 
     glWidget = new GLWidget(this);
-    glWidget->setMinimumSize(QSize(150, 150));
+    glWidget->setMinimumSize(QSize(300, 300));
+    //glWidget->setMaximumSize(QSize(1800, 1000));
     connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
     connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
 }

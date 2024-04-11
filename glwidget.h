@@ -23,8 +23,6 @@ public:
 
     void loadTexture(const QString &filename);
 
-    QSize minimumSizeHint() const;
-
 signals:
     void imageSizeChanged(int width, int height);
 
@@ -38,10 +36,10 @@ private:
     ShaderManager* shaderManager = nullptr;
     QMainWindow* parent = nullptr;
 
-    GLuint vao;
-    GLuint vbo;
-    GLuint vaoStatic;
-    GLuint vboStatic;
+    GLuint vaoCorrection;
+    GLuint vboCorrection;
+    GLuint vaoBase;
+    GLuint vboBase;
 
     GLuint textureID;
     QOpenGLTexture* texture = nullptr;
@@ -52,7 +50,7 @@ private:
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);
     void closeEvent(QCloseEvent *event) override;
-
+    void useShader(ShaderName shaderName);
 };
 
 #endif // GLWIDGET_H
