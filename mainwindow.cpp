@@ -10,18 +10,11 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QScrollArea>
 
 
 MainWindow::MainWindow()
 {
-    // Main widget
-    mainWidget = new QWidget(this);
-    this->setCentralWidget(mainWidget);
-
-    // Main layout
-    QVBoxLayout* layout = new QVBoxLayout(mainWidget);
-    //mainWidget->setLayout(layout);
-
     // Window setup
     this->setWindowTitle("Image Processor");
     this->resize(300, 500);
@@ -36,6 +29,18 @@ MainWindow::MainWindow()
     menuList->addAction(openFile);
     connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     setMenuBar(menuBar);
+
+    // Main widget (container for scrollable content)
+    mainWidget = new QWidget(this);
+
+    // Scroll Area
+    QScrollArea* scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setWidget(mainWidget);
+
+    // Main layout (for widgets inside mainWidget)
+    QVBoxLayout* layout = new QVBoxLayout(mainWidget);
+    layout->setAlignment(Qt::AlignTop);
 
     // GLWidget setup
     glWidget = new GLWidget(this);
@@ -54,6 +59,9 @@ MainWindow::MainWindow()
     sectionCorrection->setContentLayout(*correctionLayout);
 
     layout->addWidget(sectionCorrection);
+
+    // Set scroll area as central widget
+    this->setCentralWidget(scrollArea);
 }
 
 MainWindow::~MainWindow()
