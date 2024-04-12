@@ -20,6 +20,7 @@ private slots:
     void closeEvent(QCloseEvent *event);
 private:
     GLWidget* glWidget;
+    QWidget* mainWidget;
 };
 
 #endif // MAINWINDOW_H
