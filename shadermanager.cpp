@@ -63,6 +63,7 @@ void ShaderManager::setFloat(ShaderName shader, char *name, float value)
     shaders.at(shader)->setUniformValue(name, value);
 }
 
+// TODO move function to glwidget
 void ShaderManager::initializeContainers()
 {
     addShader(ShaderName::Base,

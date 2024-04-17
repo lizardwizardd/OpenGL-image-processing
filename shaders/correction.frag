@@ -4,7 +4,7 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
-uniform float exposure;    // [-5; 5] = 0.0
+uniform float exposure;    // [-2; 2] = 0.0
 uniform float contrast;    // [0; 2]  = 1.0
 uniform float temperature; // [0; 2]  = 0.5
 uniform float saturation;  // [0; 2]  = 1.0
@@ -29,7 +29,7 @@ vec3 adjustTemperature(vec3 color, float temperature) {
 
     vec3 interpolatedColor = mix(warmColor, coolColor, temperature);
 
-    return mix(color, interpolatedColor, temperature / 10000.0);
+    return mix(color, interpolatedColor, temperature);
 }
 
 vec3 adjustSaturation(vec3 color, float saturation) {
@@ -40,10 +40,11 @@ vec3 adjustSaturation(vec3 color, float saturation) {
 void main()
 {
     vec3 col = texture(screenTexture, TexCoords).rgb;
-    col = adjustExposure(col, 0);
-    col = adjustContrast(col, 1);
-    col = adjustTemperature(col, 0.5);
-    col = adjustSaturation(col, 1);
-    col = adjustBrightness(col, 0);
+    col = adjustExposure(col, exposure);
+    col = adjustContrast(col, contrast);
+    col = adjustTemperature(col, temperature);
+    col = adjustSaturation(col, saturation);
+    col = adjustBrightness(col, brightness);
+
     FragColor = vec4(col, 1.0);
 }

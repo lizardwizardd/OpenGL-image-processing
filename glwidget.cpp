@@ -96,11 +96,29 @@ void GLWidget::loadTexture(const QString &filename)
     qDebug() << "loadTexture:" << elapsedMs << "ms";
 }
 
+void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName, char* uniformName)
+{
+    useShader(shaderName);
+    shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
+    this->update();
+}
+
+void GLWidget::initializeUniforms()
+{
+    useShader(ShaderName::Correction);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"exposure", 0.0f);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"contrast", 1.0f);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"temperature", 0.5f);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"saturation", 1.0f);
+    shaderManager->setFloat(ShaderName::Correction, (char*)"brightness", 0.0f);
+}
+
 void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
     shaderManager = new ShaderManager();
     initializeBuffers();
+    initializeUniforms();
 }
 
 void GLWidget::paintGL()

@@ -21,6 +21,9 @@ private slots:
 private:
     GLWidget* glWidget;
     QWidget* mainWidget;
+
+    QSlider* createSlider(int minValue, int maxValue, int defaultValue,
+                          ShaderName shaderName, char* uniformName);
 };
 
 #endif // MAINWINDOW_H
