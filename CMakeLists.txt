@@ -27,6 +27,8 @@ set(PROJECT_SOURCES
         shaders/base.frag
         shaders/correction.frag
         shaders/correction.vert
+        shaders/sharpness.vert
+        shaders/sharpness.frag
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

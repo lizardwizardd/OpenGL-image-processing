@@ -66,7 +66,8 @@ void GLWidget::loadTexture(const QString &filename)
         textureID = this->texture->textureId();
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        // Initialize FBO texture
+
+        // Initialize FBO 1
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glGenTextures(1, &textureColorbuffer);
         glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
@@ -76,10 +77,24 @@ void GLWidget::loadTexture(const QString &filename)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_2D,textureColorbuffer, 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            qDebug() << "Framebuffer not complete!";
+
+        // Initialize FBO 2
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo2);
+        glGenTextures(1, &textureColorbuffer2);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newTexture->width(),
+                     newTexture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D,textureColorbuffer2, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             qDebug() << "Framebuffer not complete!";
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
+
 
         // Handle size change
         int windowW = texture->width();
@@ -133,14 +148,26 @@ void GLWidget::paintGL()
     glBindVertexArray(vaoBase);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    // Second Pass: Render to screen using the second shader
+
+    // Second pass Render to FBO using the second shader
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo2);
+
+    useShader(ShaderName::Sharpness);
+    shaderManager->setInt(ShaderName::Sharpness, (char*)"screenTexture", 0);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+
+    glBindVertexArray(vaoBase);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+
+    // Third Pass: Render to screen using the second shader
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind the original fbo
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
 
     useShader(ShaderName::Correction);
     shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 
     glBindVertexArray(vaoCorrection);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -219,6 +246,7 @@ void GLWidget::initializeBuffers()
 
     // FBO
     glGenFramebuffers(1, &fbo);
+    glGenFramebuffers(1, &fbo2);
 
     // VAO STATIC
     glGenVertexArrays(1, &vaoBase);

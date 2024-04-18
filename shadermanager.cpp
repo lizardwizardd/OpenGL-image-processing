@@ -75,6 +75,11 @@ void ShaderManager::initializeContainers()
               "F:/Programming/OpenGL-image-processing/shaders/correction.vert",
               "F:/Programming/OpenGL-image-processing/shaders/correction.frag");
     shaderState.at(ShaderName::Correction) = true;
+
+    addShader(ShaderName::Sharpness,
+              "F:/Programming/OpenGL-image-processing/shaders/sharpness.vert",
+              "F:/Programming/OpenGL-image-processing/shaders/sharpness.frag");
+    shaderState.at(ShaderName::Correction) = true;
 }
 
 void ShaderManager::addShader(ShaderName shaderName, const QString &vertexPath,

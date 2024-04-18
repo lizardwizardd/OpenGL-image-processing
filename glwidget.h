@@ -49,7 +49,9 @@ private:
     QOpenGLTexture* texture = nullptr;
 
     GLuint fbo;
+    GLuint fbo2;
     GLuint textureColorbuffer;
+    GLuint textureColorbuffer2;
 
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);

@@ -10,6 +10,7 @@ enum class ShaderName
 {
     Base,
     Correction,
+    Sharpness,
     Count
 };
 
