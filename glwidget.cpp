@@ -121,11 +121,7 @@ void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName, char* 
 void GLWidget::initializeUniforms()
 {
     useShader(ShaderName::Correction);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"exposure", 0.0f);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"contrast", 1.0f);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"temperature", 0.5f);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"saturation", 1.0f);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"brightness", 0.0f);
+    shaderManager->initializeShader(ShaderName::Correction);
 }
 
 void GLWidget::initializeGL()
@@ -142,7 +138,7 @@ void GLWidget::paintGL()
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     useShader(ShaderName::Correction);
-    shaderManager->setInt(ShaderName::Correction, (char*)"texture", 0);
+    shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glBindVertexArray(vaoBase);

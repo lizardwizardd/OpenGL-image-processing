@@ -18,6 +18,11 @@ GLuint ShaderManager::getProgramId(ShaderName shader)
     return getShader(shader)->programId();
 }
 
+void ShaderManager::initializeShader(ShaderName shaderName)
+{
+    shaders.at(shaderName)->initializeUniforms();
+}
+
 void ShaderManager::useProgram(ShaderName shader)
 {
     ///glUseProgram(getShader(shader)->programId());
@@ -59,41 +64,26 @@ void ShaderManager::setInt(ShaderName shader, char *name, int value)
 
 void ShaderManager::setFloat(ShaderName shader, char *name, float value)
 {
-    //qDebug() << "Setting float " << value;
     shaders.at(shader)->setUniformValue(name, value);
 }
 
-// TODO move function to glwidget
+// TODO this function should not compile (move compile to glwidget)
 void ShaderManager::initializeContainers()
 {
-    addShader(ShaderName::Base,
-              "F:/Programming/OpenGL-image-processing/shaders/base.vert",
-              "F:/Programming/OpenGL-image-processing/shaders/base.frag");
-    shaderState.at(ShaderName::Base) = true;
+    Shader* currentShader;
 
-    addShader(ShaderName::Correction,
-              "F:/Programming/OpenGL-image-processing/shaders/correction.vert",
-              "F:/Programming/OpenGL-image-processing/shaders/correction.frag");
-    shaderState.at(ShaderName::Correction) = true;
+    currentShader = new BaseShader();
+    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
+    shaderState.insert(std::make_pair(currentShader->getName(), true));
+    currentShader->compile();
 
-    addShader(ShaderName::Sharpness,
-              "F:/Programming/OpenGL-image-processing/shaders/sharpness.vert",
-              "F:/Programming/OpenGL-image-processing/shaders/sharpness.frag");
-    shaderState.at(ShaderName::Correction) = true;
-}
+    currentShader = new CorrectionShader();
+    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
+    shaderState.insert(std::make_pair(currentShader->getName(), true));
+    currentShader->compile();
 
-void ShaderManager::addShader(ShaderName shaderName, const QString &vertexPath,
-                                                   const QString &fragmentPath)
-{
-    QOpenGLShaderProgram* newShader = new QOpenGLShaderProgram();
-
-    // TODO: Cacheable shaders
-    newShader->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexPath);
-    newShader->addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentPath);
-
-    if (newShader->link())
-        qDebug() << "Linked successfully (addShader)";
-
-    this->shaders.insert(std::make_pair(shaderName, newShader));
-    this->shaderState.insert(std::make_pair(shaderName, false));
+    currentShader = new SharpnessShader();
+    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
+    shaderState.insert(std::make_pair(currentShader->getName(), true));
+    currentShader->compile();
 }

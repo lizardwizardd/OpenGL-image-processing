@@ -4,6 +4,7 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
+
 uniform float exposure;    // [-2; 2] = 0.0
 uniform float contrast;    // [0; 2]  = 1.0
 uniform float temperature; // [0; 2]  = 0.5
@@ -39,7 +40,7 @@ vec3 adjustSaturation(vec3 color, float saturation) {
 
 void main()
 {
-    vec3 col = texture(screenTexture, TexCoords).rgb;
+    vec3 col = texture2D(screenTexture, TexCoords).rgb;
     col = adjustExposure(col, exposure);
     col = adjustContrast(col, contrast);
     col = adjustTemperature(col, temperature);

@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         shadermanager.h
         section.cpp
         section.h
+        shaderparameters.h
 
         shaders/base.vert
         shaders/base.frag

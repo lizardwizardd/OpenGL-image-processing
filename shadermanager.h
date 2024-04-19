@@ -6,13 +6,7 @@
 #include <unordered_map>
 #include <QOpenGLShaderProgram>
 
-enum class ShaderName
-{
-    Base,
-    Correction,
-    Sharpness,
-    Count
-};
+#include "shaderparameters.h"
 
 class ShaderManager
 {
@@ -21,6 +15,7 @@ public:
     ~ShaderManager();
 
     GLuint getProgramId(ShaderName shader);
+    void initializeShader(ShaderName shaderName);
     void useProgram(ShaderName shader);
     void disableAttributeArray(ShaderName shader, const char* attribName);
     void setAttributeBuffer(ShaderName shader, const char* attribName,
@@ -33,12 +28,10 @@ public:
     QOpenGLShaderProgram *getShader(ShaderName shaderName);
 
 private:
-    std::unordered_map<ShaderName, QOpenGLShaderProgram*> shaders;
+    std::unordered_map<ShaderName, Shader*> shaders;
     std::map<ShaderName, bool> shaderState;
 
     void initializeContainers();
-    void addShader(ShaderName shaderName, const QString& vertexPath,
-                                          const QString& fragmentPath);
 };
 
 #endif // SHADERMANAGER_H

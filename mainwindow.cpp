@@ -123,6 +123,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
+// TODO pass Shader*
 QSlider *MainWindow::createSlider(int minValue, int maxValue, int defaultValue,
                                   ShaderName shaderName, char *uniformName)
 {
