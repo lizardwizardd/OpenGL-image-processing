@@ -20,6 +20,9 @@ public:
         name(shaderName)
     {}
 
+    virtual ~Shader()
+    {}
+
     bool compile()
     {
         addShaderFromSourceFile(QOpenGLShader::Vertex, vertexShaderPath);
@@ -70,18 +73,30 @@ public:
 
     void initializeUniforms() override
     {
-        setUniformValue("exposure", exposureVals[2] / 100.0f);
-        setUniformValue("contrast", contrastVals[2] / 100.0f);
-        setUniformValue("temperature", temperatureVals[2] / 100.0f);
-        setUniformValue("saturation", saturationVals[2] / 100.0f);
-        setUniformValue("brightness", brightnessVals[2] / 100.0f);
+        setUniformValue(std::get<3>(exposureVals),
+                        std::get<2>(exposureVals) / 100.0f);
+
+        setUniformValue(std::get<3>(contrastVals),
+                        std::get<2>(contrastVals) / 100.0f);
+
+        setUniformValue(std::get<3>(temperatureVals),
+                        std::get<2>(temperatureVals) / 100.0f);
+
+        setUniformValue(std::get<3>(saturationVals),
+                        std::get<2>(saturationVals) / 100.0f);
+
+        setUniformValue(std::get<3>(brightnessVals),
+                        std::get<2>(brightnessVals) / 100.0f);
     }
-                                             //min   max  default
-    static constexpr int exposureVals[3]    = {-200, 200, 0};
-    static constexpr int contrastVals[3]    = {0,    200, 100};
-    static constexpr int temperatureVals[3] = {0,    100, 0};
-    static constexpr int saturationVals[3]  = {0,    200, 100};
-    static constexpr int brightnessVals[3]  = {-100, 100, 0};
+
+    using ValueTuple = std::tuple<int, int, int, const char*>;
+
+                                         // min, max, default, uniform name
+    static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure"};
+    static constexpr ValueTuple contrastVals    = {0, 200, 100, "contrast"};
+    static constexpr ValueTuple temperatureVals = {0, 100, 0, "temperature"};
+    static constexpr ValueTuple saturationVals  = {0, 200, 100, "saturation"};
+    static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness"};
 };
 
 

@@ -111,7 +111,8 @@ void GLWidget::loadTexture(const QString &filename)
     qDebug() << "loadTexture:" << elapsedMs << "ms";
 }
 
-void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName, char* uniformName)
+void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
+                                  const char* uniformName)
 {
     useShader(shaderName);
     shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);

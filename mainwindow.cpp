@@ -60,28 +60,28 @@ MainWindow::MainWindow()
 
     // Exposure
     correctionLayout->addWidget(new QLabel("Exposure", sectionCorrection));
-    correctionLayout->addWidget(createSlider(-200, 200, 0, ShaderName::
-                                             Correction, (char*)"exposure"));
+    correctionLayout->addWidget(createSlider(ShaderName::Correction,
+                                             CorrectionShader::exposureVals));
 
     // Contrast
     correctionLayout->addWidget(new QLabel("Contrast", sectionCorrection));
-    correctionLayout->addWidget(createSlider(0, 200, 100, ShaderName::
-                                             Correction, (char*)"contrast"));
+    correctionLayout->addWidget(createSlider(ShaderName::Correction,
+                                             CorrectionShader::contrastVals));
 
     // Temperature
     correctionLayout->addWidget(new QLabel("Temperature", sectionCorrection));
-    correctionLayout->addWidget(createSlider(0, 100, 0, ShaderName::
-                                             Correction, (char*)"temperature"));
+    correctionLayout->addWidget(createSlider(ShaderName::Correction,
+                                             CorrectionShader::temperatureVals));;
 
     // Saturation
     correctionLayout->addWidget(new QLabel("Saturation", sectionCorrection));
-    correctionLayout->addWidget(createSlider(0, 200, 100, ShaderName::
-                                             Correction, (char*)"saturation"));
+    correctionLayout->addWidget(createSlider(ShaderName::Correction,
+                                             CorrectionShader::saturationVals));
 
     // Brightness
     correctionLayout->addWidget(new QLabel("Brightness", sectionCorrection));
-    correctionLayout->addWidget(createSlider(-100, 100, 0, ShaderName::
-                                             Correction, (char*)"brightness"));
+    correctionLayout->addWidget(createSlider(ShaderName::Correction,
+                                             CorrectionShader::brightnessVals));
 
     sectionCorrection->setContentLayout(*correctionLayout);
 
@@ -123,14 +123,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-// TODO pass Shader*
-QSlider *MainWindow::createSlider(int minValue, int maxValue, int defaultValue,
-                                  ShaderName shaderName, char *uniformName)
+QSlider *MainWindow::createSlider(ShaderName shaderName,
+      std::tuple<int, int, int, const char*> parameters)
 {
     QSlider* slider = new QSlider(Qt::Orientation::Horizontal, this);
-    slider->setMinimum(minValue);
-    slider->setMaximum(maxValue);
-    slider->setValue(defaultValue);
+    slider->setMinimum(std::get<0>(parameters));
+    slider->setMaximum(std::get<1>(parameters));
+    slider->setValue(std::get<2>(parameters));
+
+    const char* uniformName = std::get<3>(parameters);
 
     connect(slider, &QSlider::valueChanged, this,
             [this, shaderName, uniformName](int value)

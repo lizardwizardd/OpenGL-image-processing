@@ -57,12 +57,12 @@ QOpenGLShaderProgram* ShaderManager::getShader(ShaderName shaderName)
     }
 }
 
-void ShaderManager::setInt(ShaderName shader, char *name, int value)
+void ShaderManager::setInt(ShaderName shader, const char *name, const int value)
 {
     shaders.at(shader)->setUniformValue(name, value);
 }
 
-void ShaderManager::setFloat(ShaderName shader, char *name, float value)
+void ShaderManager::setFloat(ShaderName shader, const char *name, const float value)
 {
     shaders.at(shader)->setUniformValue(name, value);
 }

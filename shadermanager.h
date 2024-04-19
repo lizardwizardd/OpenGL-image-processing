@@ -22,8 +22,8 @@ public:
                             GLenum type, int offset, int tupleSize, int stride);
 
     // Uniform setters
-    void setInt(ShaderName shader, char* name, int value);
-    void setFloat(ShaderName shader, char *name, float value);
+    void setInt(ShaderName shader, const char* name, const int value);
+    void setFloat(ShaderName shader, const char *name, const float value);
 
     QOpenGLShaderProgram *getShader(ShaderName shaderName);
 

@@ -24,7 +24,7 @@ public:
     void loadTexture(const QString &filename);
 
     void changeUniformValue(int sliderValue, ShaderName shaderName,
-                            char* uniformName);
+                            const char* uniformName);
     void initializeUniforms();
 
 signals:

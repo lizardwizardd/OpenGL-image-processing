@@ -22,8 +22,8 @@ private:
     GLWidget* glWidget;
     QWidget* mainWidget;
 
-    QSlider* createSlider(int minValue, int maxValue, int defaultValue,
-                          ShaderName shaderName, char* uniformName);
+    QSlider* createSlider(ShaderName shaderName,
+                          std::tuple<int, int, int, const char*> parameters);
 };
 
 #endif // MAINWINDOW_H
