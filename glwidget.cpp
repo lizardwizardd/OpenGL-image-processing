@@ -141,15 +141,15 @@ void GLWidget::paintGL()
     // First Pass: Render to FBO using the first shader
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    useShader(ShaderName::Base);
-    shaderManager->setInt(ShaderName::Base, (char*)"texture", 0);
+    useShader(ShaderName::Correction);
+    shaderManager->setInt(ShaderName::Correction, (char*)"texture", 0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glBindVertexArray(vaoBase);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 
-    // Second pass Render to FBO using the second shader
+    // Second pass Render to FBO 2 using the second shader
     glBindFramebuffer(GL_FRAMEBUFFER, fbo2);
 
     useShader(ShaderName::Sharpness);
@@ -160,13 +160,13 @@ void GLWidget::paintGL()
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 
-    // Third Pass: Render to screen using the second shader
+    // Third Pass: Render to screen using the base shader
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind the original fbo
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
 
-    useShader(ShaderName::Correction);
-    shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
+    useShader(ShaderName::Base);
+    shaderManager->setInt(ShaderName::Base, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 
     glBindVertexArray(vaoCorrection);
@@ -204,6 +204,8 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     shaderManager->setFloat(ShaderName::Base, (char*)"scaleDiff", scaleDiff);
     useShader(ShaderName::Correction);
     shaderManager->setFloat(ShaderName::Correction, (char*)"scaleDiff", scaleDiff);
+    useShader(ShaderName::Sharpness);
+    shaderManager->setFloat(ShaderName::Sharpness, (char*)"scaleDiff", scaleDiff);
 
     QVector<float> vertices1 = {
         -objectWidth,  objectHeight,    0.0f, 1.0f, // TL
