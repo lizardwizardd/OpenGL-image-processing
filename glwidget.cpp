@@ -138,8 +138,8 @@ void GLWidget::paintGL()
     // First Pass: Render to FBO using the first shader
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    useShader(ShaderName::Correction);
-    shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
+    useShader(ShaderName::Base);
+    shaderManager->setInt(ShaderName::Base, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     glBindVertexArray(vaoBase);
@@ -162,8 +162,8 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
 
-    useShader(ShaderName::Base);
-    shaderManager->setInt(ShaderName::Base, (char*)"screenTexture", 0);
+    useShader(ShaderName::Correction);
+    shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 
     glBindVertexArray(vaoCorrection);
