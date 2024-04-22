@@ -11,6 +11,8 @@ enum class ShaderName
     Count
 };
 
+// todo on / off
+
 class Shader : public QOpenGLShaderProgram
 {
 public:
@@ -73,9 +75,9 @@ public:
 
     using ValueTuple = std::tuple<int, int, int, const char*>;
     static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure"};
-    static constexpr ValueTuple contrastVals    = {0, 200, 100, "contrast"};
-    static constexpr ValueTuple temperatureVals = {0, 100, 0, "temperature"};
-    static constexpr ValueTuple saturationVals  = {0, 200, 100, "saturation"};
+    static constexpr ValueTuple contrastVals    = {0,    200, 100, "contrast"};
+    static constexpr ValueTuple temperatureVals = {-100, 100, 0, "temperature"};
+    static constexpr ValueTuple saturationVals  = {0,    200, 100, "saturation"};
     static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness"};
 
     void initializeUniforms() override
@@ -108,7 +110,7 @@ public:
             ShaderName::Sharpness) {}
 
     using ValueTuple = std::tuple<int, int, int, const char*>;
-    static constexpr ValueTuple strengthVals = {0, 100, 100, "strength"};
+    static constexpr ValueTuple strengthVals = {0, 100, 50, "strength"};
 
     void initializeUniforms() override
     {

@@ -145,7 +145,7 @@ void GLWidget::paintGL()
     shaderManager->setInt(ShaderName::Base, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glBindVertexArray(vaoBase);
+    glBindVertexArray(vaoNoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 
@@ -156,7 +156,7 @@ void GLWidget::paintGL()
     shaderManager->setInt(ShaderName::Sharpness, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 
-    glBindVertexArray(vaoBase);
+    glBindVertexArray(vaoNoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 
@@ -169,7 +169,7 @@ void GLWidget::paintGL()
     shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 
-    glBindVertexArray(vaoCorrection);
+    glBindVertexArray(vaoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -224,11 +224,11 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     };
 
     // vertices 1
-    glBindBuffer(GL_ARRAY_BUFFER, vboCorrection);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCentering);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices1.size(),
                                                         vertices1.data());
     // vertices 2
-    glBindBuffer(GL_ARRAY_BUFFER, vboBase);
+    glBindBuffer(GL_ARRAY_BUFFER, vboNoCentering);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices2.size(),
                                                         vertices2.data());
 
@@ -253,12 +253,12 @@ void GLWidget::initializeBuffers()
     glGenFramebuffers(1, &fbo2);
 
     // VAO STATIC
-    glGenVertexArrays(1, &vaoBase);
-    glBindVertexArray(vaoBase);
+    glGenVertexArrays(1, &vaoNoCentering);
+    glBindVertexArray(vaoNoCentering);
 
     // VBO STATIC
-    glGenBuffers(1, &vboBase);
-    glBindBuffer(GL_ARRAY_BUFFER, vboBase);
+    glGenBuffers(1, &vboNoCentering);
+    glBindBuffer(GL_ARRAY_BUFFER, vboNoCentering);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -268,12 +268,12 @@ void GLWidget::initializeBuffers()
     glEnableVertexAttribArray(1);
 
     // VAO
-    glGenVertexArrays(1, &vaoCorrection);
-    glBindVertexArray(vaoCorrection);
+    glGenVertexArrays(1, &vaoCentering);
+    glBindVertexArray(vaoCentering);
 
     // VBO
-    glGenBuffers(1, &vboCorrection);
-    glBindBuffer(GL_ARRAY_BUFFER, vboCorrection);
+    glGenBuffers(1, &vboCentering);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCentering);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);

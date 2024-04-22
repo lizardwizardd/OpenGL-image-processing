@@ -39,11 +39,11 @@ private:
     float textureAspectRatio = 0.0f;
     ShaderManager* shaderManager = nullptr;
     QMainWindow* parent = nullptr;
-
-    GLuint vaoCorrection;
-    GLuint vboCorrection;
-    GLuint vaoBase;
-    GLuint vboBase;
+    
+    GLuint vaoCentering;
+    GLuint vboCentering;
+    GLuint vaoNoCentering;
+    GLuint vboNoCentering;
 
     GLuint textureID;
     QOpenGLTexture* texture = nullptr;
