@@ -16,10 +16,11 @@ enum class ShaderName
 class Shader : public QOpenGLShaderProgram
 {
 public:
-    Shader(const QString& vertexPath, const QString& fragmentPath, ShaderName shaderName) :
+    Shader(const QString& vertexPath, const QString& fragmentPath, ShaderName shaderName, bool state = false) :
         vertexShaderPath(vertexPath),
         fragmentShaderPath(fragmentPath),
-        name(shaderName)
+        name(shaderName),
+        isActive(state)
     {}
 
     virtual ~Shader()
@@ -48,6 +49,7 @@ protected:
     QString vertexShaderPath;
     QString fragmentShaderPath;
     ShaderName name;
+    bool isActive;
 };
 
 
@@ -73,12 +75,12 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/correction.frag",
             ShaderName::Correction) {}
 
-    using ValueTuple = std::tuple<int, int, int, const char*>;
-    static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure"};
-    static constexpr ValueTuple contrastVals    = {0,    200, 100, "contrast"};
-    static constexpr ValueTuple temperatureVals = {-100, 100, 0, "temperature"};
-    static constexpr ValueTuple saturationVals  = {0,    200, 100, "saturation"};
-    static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness"};
+    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
+    static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure", "Exposure"};
+    static constexpr ValueTuple contrastVals    = {0,    200, 100, "contrast", "Contrast"};
+    static constexpr ValueTuple temperatureVals = {-100, 100, 0, "temperature", "Temperature"};
+    static constexpr ValueTuple saturationVals  = {0,    200, 100, "saturation", "Saturation"};
+    static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness", "Brightness"};
 
     void initializeUniforms() override
     {
@@ -109,8 +111,9 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/sharpness.frag",
             ShaderName::Sharpness) {}
 
-    using ValueTuple = std::tuple<int, int, int, const char*>;
-    static constexpr ValueTuple strengthVals = {0, 100, 50, "strength"};
+    // min, max, default, uniform name, display name
+    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
+    static constexpr ValueTuple strengthVals = {0, 100, 50, "strength", "Strength"};
 
     void initializeUniforms() override
     {

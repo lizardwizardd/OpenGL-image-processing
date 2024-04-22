@@ -3,8 +3,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSlider>
+#include <QHBoxLayout>
+
 #include "glwidget.h"
-#include "QSlider"
 
 class MainWindow : public QMainWindow
 {
@@ -23,7 +25,11 @@ private:
     QWidget* mainWidget;
 
     QSlider* createSlider(ShaderName shaderName,
-                          std::tuple<int, int, int, const char*> parameters);
+        std::tuple<int, int, int, const char*, const char*> parameters);
+    QHBoxLayout* createSliderLayout(ShaderName shaderName,
+        std::tuple<int, int, int, const char*, const char*> parameters);
+    QHBoxLayout* createLabelLayout(ShaderName shaderName,
+        std::tuple<int, int, int, const char*, const char*> parameters);
 };
 
 #endif // MAINWINDOW_H
