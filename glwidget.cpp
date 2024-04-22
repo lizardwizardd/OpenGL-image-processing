@@ -116,6 +116,7 @@ void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
 {
     useShader(shaderName);
     shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
+    qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
     this->update();
 }
 
@@ -123,6 +124,8 @@ void GLWidget::initializeUniforms()
 {
     useShader(ShaderName::Correction);
     shaderManager->initializeShader(ShaderName::Correction);
+    useShader(ShaderName::Sharpness);
+    shaderManager->initializeShader(ShaderName::Sharpness);
 }
 
 void GLWidget::initializeGL()
@@ -203,6 +206,8 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     shaderManager->setFloat(ShaderName::Correction, (char*)"scaleDiff", scaleDiff);
     useShader(ShaderName::Sharpness);
     shaderManager->setFloat(ShaderName::Sharpness, (char*)"scaleDiff", scaleDiff);
+    shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureWidth", texture->width());
+    shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureHeight", texture->height());
 
     QVector<float> vertices1 = {
         -objectWidth,  objectHeight,    0.0f, 1.0f, // TL

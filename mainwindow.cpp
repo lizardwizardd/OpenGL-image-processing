@@ -56,8 +56,6 @@ MainWindow::MainWindow()
     Section* sectionCorrection = new Section("Color correction", 0, mainWidget);
     QVBoxLayout* correctionLayout = new QVBoxLayout();
 
-    // TODO shader class (?)
-
     // Exposure
     correctionLayout->addWidget(new QLabel("Exposure", sectionCorrection));
     correctionLayout->addWidget(createSlider(ShaderName::Correction,
@@ -84,8 +82,19 @@ MainWindow::MainWindow()
                                              CorrectionShader::brightnessVals));
 
     sectionCorrection->setContentLayout(*correctionLayout);
-
     layout->addWidget(sectionCorrection);
+
+    // Color correction
+    Section* sectionSharpness = new Section("Sharpness", 0, mainWidget);
+    QVBoxLayout* sharpnessLayout = new QVBoxLayout();
+
+    // Strength
+    sharpnessLayout->addWidget(new QLabel("Strength", sectionSharpness));
+    sharpnessLayout->addWidget(createSlider(ShaderName::Sharpness,
+                                            SharpnessShader::strengthVals));
+
+    sectionSharpness->setContentLayout(*sharpnessLayout);
+    layout->addWidget(sectionSharpness);
 
     // Set scroll area as central widget
     this->setCentralWidget(scrollArea);

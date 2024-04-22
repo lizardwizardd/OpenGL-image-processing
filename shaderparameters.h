@@ -71,6 +71,13 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/correction.frag",
             ShaderName::Correction) {}
 
+    using ValueTuple = std::tuple<int, int, int, const char*>;
+    static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure"};
+    static constexpr ValueTuple contrastVals    = {0, 200, 100, "contrast"};
+    static constexpr ValueTuple temperatureVals = {0, 100, 0, "temperature"};
+    static constexpr ValueTuple saturationVals  = {0, 200, 100, "saturation"};
+    static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness"};
+
     void initializeUniforms() override
     {
         setUniformValue(std::get<3>(exposureVals),
@@ -88,15 +95,6 @@ public:
         setUniformValue(std::get<3>(brightnessVals),
                         std::get<2>(brightnessVals) / 100.0f);
     }
-
-    using ValueTuple = std::tuple<int, int, int, const char*>;
-
-                                         // min, max, default, uniform name
-    static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure"};
-    static constexpr ValueTuple contrastVals    = {0, 200, 100, "contrast"};
-    static constexpr ValueTuple temperatureVals = {0, 100, 0, "temperature"};
-    static constexpr ValueTuple saturationVals  = {0, 200, 100, "saturation"};
-    static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness"};
 };
 
 
@@ -109,5 +107,12 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/sharpness.frag",
             ShaderName::Sharpness) {}
 
-    void initializeUniforms() override {}
+    using ValueTuple = std::tuple<int, int, int, const char*>;
+    static constexpr ValueTuple strengthVals = {0, 100, 100, "strength"};
+
+    void initializeUniforms() override
+    {
+        setUniformValue(std::get<3>(strengthVals),
+                        std::get<2>(strengthVals) / 100.0f);
+    }
 };
