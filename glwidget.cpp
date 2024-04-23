@@ -6,6 +6,7 @@
 #include <QOpenGLTexture>
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QMessageBox>
 
 
 GLWidget::GLWidget(QMainWindow *parent) :
@@ -114,6 +115,15 @@ void GLWidget::loadTexture(const QString &filename)
 void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
                                   const char* uniformName)
 {
+    if (!shaderManager)
+    {
+        //QMessageBox messageBox;
+        //messageBox.critical(0, "Error", "Open file before changing shader parameters.");
+        //messageBox.setFixedSize(300,200);
+
+        // TODO update/reinit in load
+        return; // allowing to change shader parameters before file was opened
+    }
     useShader(shaderName);
     shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
     qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
