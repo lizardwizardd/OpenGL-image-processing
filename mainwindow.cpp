@@ -59,34 +59,23 @@ MainWindow::MainWindow()
     QVBoxLayout* correctionLayout = new QVBoxLayout();
 
     // Exposure
-    correctionLayout->addLayout(createLabelLayout(ShaderName::Correction,
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::exposureVals));
-    correctionLayout->addLayout(createSliderLayout(ShaderName::Correction,
-                                                   CorrectionShader::exposureVals));
-
     // Contrast
-    correctionLayout->addLayout(createLabelLayout(ShaderName::Correction,
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::contrastVals));
-    correctionLayout->addLayout(createSliderLayout(ShaderName::Correction,
-                                             CorrectionShader::contrastVals));
 
     // Temperature
-    correctionLayout->addLayout(createLabelLayout(ShaderName::Correction,
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::temperatureVals));
-    correctionLayout->addLayout(createSliderLayout(ShaderName::Correction,
-                                             CorrectionShader::temperatureVals));;
 
     // Saturation
-    correctionLayout->addLayout(createLabelLayout(ShaderName::Correction,
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::saturationVals));
-    correctionLayout->addLayout(createSliderLayout(ShaderName::Correction,
-                                             CorrectionShader::saturationVals));
 
     // Brightness
-    correctionLayout->addLayout(createLabelLayout(ShaderName::Correction,
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::brightnessVals));
-    correctionLayout->addLayout(createSliderLayout(ShaderName::Correction,
-                                             CorrectionShader::brightnessVals));
 
     sectionCorrection->setContentLayout(*correctionLayout);
     layout->addWidget(sectionCorrection);
@@ -96,10 +85,8 @@ MainWindow::MainWindow()
     QVBoxLayout* sharpnessLayout = new QVBoxLayout();
 
     // Strength
-    sharpnessLayout->addLayout(createLabelLayout(ShaderName::Sharpness,
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Sharpness,
                                                   SharpnessShader::strengthVals));
-    sharpnessLayout->addWidget(createSlider(ShaderName::Sharpness,
-                                            SharpnessShader::strengthVals));
 
     sectionSharpness->setContentLayout(*sharpnessLayout);
     layout->addWidget(sectionSharpness);
@@ -138,6 +125,83 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (glWidget)
         glWidget->close();
     event->accept();
+}
+
+QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
+    std::tuple<int, int, int, const char*, const char*> parameters)
+{
+    // LABEL
+
+    QLineEdit* lineEdit = new QLineEdit(QString::number(std::get<2>(parameters)));
+    lineEdit->setStyleSheet("QLineEdit {background: rgb(240, 240, 240);}");
+    lineEdit->setMaximumWidth(30);
+    lineEdit->setMaximumHeight(20);
+    lineEdit->setAlignment(Qt::AlignCenter);
+    lineEdit->setFrame(false);
+    lineEdit->setValidator(new QIntValidator(
+        std::get<0>(parameters),
+        std::get<1>(parameters))
+                           );
+    // TODO connect lineEdit
+
+    QLabel* label = new QLabel(std::get<4>(parameters));
+    label->setMinimumWidth(110);
+
+    QHBoxLayout* horizLayoutLabel = new QHBoxLayout();
+    horizLayoutLabel->setAlignment(Qt::AlignLeft);
+    horizLayoutLabel->addWidget(label, 0, Qt::AlignLeft);
+    horizLayoutLabel->addWidget(lineEdit, 0, Qt::AlignLeft);
+
+    // SLIDER
+
+    QSlider* slider = new QSlider(Qt::Orientation::Horizontal);
+    slider->setMinimum(std::get<0>(parameters));
+    slider->setMaximum(std::get<1>(parameters));
+    slider->setValue(std::get<2>(parameters));
+
+    QHBoxLayout* horizLayoutSlider = new QHBoxLayout();
+
+    auto minLabel = new QLabel(QString::number(std::get<0>(parameters)));
+    minLabel->setMinimumWidth(25);
+    minLabel->setAlignment(Qt::AlignRight);
+    auto maxLabel = new QLabel(QString::number(std::get<1>(parameters)));
+    maxLabel->setMinimumWidth(25);
+    maxLabel->setAlignment(Qt::AlignLeft);
+
+    horizLayoutSlider->addWidget(minLabel);
+    horizLayoutSlider->addWidget(slider);
+    horizLayoutSlider->addWidget(maxLabel);
+
+    const char* uniformName = std::get<3>(parameters);
+
+    // CONNECT
+
+    connect(slider, &QSlider::valueChanged, this,
+            [this, shaderName, uniformName](int value)
+            {
+                this->glWidget->changeUniformValue
+                    (value, shaderName, uniformName);
+            });
+
+    connect(slider, &QSlider::valueChanged, this,
+            [this, lineEdit](int value)
+            {
+                lineEdit->setText(QString::number(value));
+            });
+
+    connect(lineEdit, &QLineEdit::textEdited, this,
+            [this, slider](const QString &text)
+            {
+                slider->setValue(text.toInt());
+            });
+
+    // VBOX
+
+    auto vbox = new QVBoxLayout();
+    vbox->addLayout(horizLayoutLabel);
+    vbox->addLayout(horizLayoutSlider);
+
+    return vbox;
 }
 
 QHBoxLayout* MainWindow::createLabelLayout(ShaderName shaderName,
