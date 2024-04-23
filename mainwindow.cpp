@@ -85,7 +85,7 @@ MainWindow::MainWindow()
     QVBoxLayout* sharpnessLayout = new QVBoxLayout();
 
     // Strength
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Sharpness,
+    sharpnessLayout->addLayout(createLabelSlider(ShaderName::Sharpness,
                                                   SharpnessShader::strengthVals));
 
     sectionSharpness->setContentLayout(*sharpnessLayout);
@@ -217,7 +217,6 @@ QHBoxLayout* MainWindow::createLabelLayout(ShaderName shaderName,
         std::get<0>(parameters),
         std::get<1>(parameters))
     );
-    // TODO connect lineEdit
 
     QLabel* label = new QLabel(std::get<4>(parameters));
     label->setMinimumWidth(110);
