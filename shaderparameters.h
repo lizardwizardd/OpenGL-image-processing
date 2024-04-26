@@ -8,19 +8,23 @@ enum class ShaderName
     Base,
     Correction,
     Sharpness,
+    Pixelate,
     Count
 };
 
-// todo on / off
+// TODO:
+// base Shader, inherited ShaderWithSliders
+// virtual initializeGUI in Shader, overloaded in inherited classes
+// create different shaders by passing values
 
 class Shader : public QOpenGLShaderProgram
 {
 public:
-    Shader(const QString& vertexPath, const QString& fragmentPath, ShaderName shaderName, bool state = false) :
+    Shader(const QString& vertexPath, const QString& fragmentPath, ShaderName shaderName, bool activeState = false) :
         vertexShaderPath(vertexPath),
         fragmentShaderPath(fragmentPath),
         name(shaderName),
-        isActive(state)
+        state(activeState)
     {}
 
     virtual ~Shader()
@@ -43,13 +47,31 @@ public:
         return name;
     }
 
+    bool isActive()
+    {
+        return state;
+    }
+
+    void setActive()
+    {
+        state = true;
+    }
+
+    void setInactive()
+    {
+        state = false;
+    }
+
     virtual void initializeUniforms() = 0;
 
 protected:
+    // min, max, default, uniform name, display name
+    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
+
     QString vertexShaderPath;
     QString fragmentShaderPath;
     ShaderName name;
-    bool isActive;
+    bool state;
 };
 
 
@@ -75,8 +97,6 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/correction.frag",
             ShaderName::Correction) {}
 
-    // min, max, default, uniform name, display name
-    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
     static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure", "Exposure"};
     static constexpr ValueTuple contrastVals    = {0,    200, 100, "contrast", "Contrast"};
     static constexpr ValueTuple temperatureVals = {-100, 100, 0, "temperature", "Temperature"};
@@ -112,13 +132,29 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/sharpness.frag",
             ShaderName::Sharpness) {}
 
-    // min, max, default, uniform name, display name
-    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
     static constexpr ValueTuple strengthVals = {0, 100, 50, "strength", "Strength"};
 
     void initializeUniforms() override
     {
         setUniformValue(std::get<3>(strengthVals),
                         std::get<2>(strengthVals) / 100.0f);
+    }
+};
+
+// PIXELATION SHADER
+class PixelateShader : public Shader
+{
+public:
+    PixelateShader() : Shader(
+            "F:/Programming/OpenGL-image-processing/shaders/pixelate.vert",
+            "F:/Programming/OpenGL-image-processing/shaders/pixelate.frag",
+            ShaderName::Pixelate) {}
+
+    static constexpr ValueTuple pixeSizeVals = {100, 50000, 100, "pixelSize", "{Pixel Size"};
+
+    void initializeUniforms() override
+    {
+        setUniformValue(std::get<3>(pixeSizeVals),
+                        std::get<2>(pixeSizeVals) / 100.0f);
     }
 };

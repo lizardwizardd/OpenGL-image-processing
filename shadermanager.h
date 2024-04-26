@@ -26,10 +26,13 @@ public:
     void setFloat(ShaderName shader, const char *name, const float value);
 
     QOpenGLShaderProgram *getShader(ShaderName shaderName);
+    ShaderName getShaderOrderByIndex(int i) const;
+
+    int countActiveShaders();
 
 private:
     std::unordered_map<ShaderName, Shader*> shaders;
-    std::map<ShaderName, bool> shaderState;
+    std::vector<ShaderName> shadersOrder;
 
     void initializeContainers();
 };

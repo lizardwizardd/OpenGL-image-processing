@@ -91,6 +91,18 @@ MainWindow::MainWindow()
     sectionSharpness->setContentLayout(*sharpnessLayout);
     layout->addWidget(sectionSharpness);
 
+    // PIXELATE
+    Section* sectionPixelate = new Section("Pixelate", 0, mainWidget);
+    QVBoxLayout* pixelateLayout = new QVBoxLayout();
+
+    // Pixel size
+    pixelateLayout->addLayout(createLabelSlider(ShaderName::Pixelate,
+                                                PixelateShader::pixeSizeVals));
+
+    sectionPixelate->setContentLayout(*pixelateLayout);
+    layout->addWidget(sectionPixelate);
+
+
     // Set scroll area as central widget
     this->setCentralWidget(scrollArea);
 }

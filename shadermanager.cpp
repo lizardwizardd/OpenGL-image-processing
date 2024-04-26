@@ -9,8 +9,8 @@ ShaderManager::ShaderManager()
 
 ShaderManager::~ShaderManager()
 {
-    for (auto& pair : shaderState)
-        delete shaders.at(pair.first);
+    for (const auto shaderName : shadersOrder)
+        delete shaders.at(shaderName);
 }
 
 GLuint ShaderManager::getProgramId(ShaderName shader)
@@ -57,6 +57,22 @@ QOpenGLShaderProgram* ShaderManager::getShader(ShaderName shaderName)
     }
 }
 
+ShaderName ShaderManager::getShaderOrderByIndex(int i) const
+{
+    return shadersOrder[i];
+}
+
+int ShaderManager::countActiveShaders()
+{
+    int count = 0;
+    for (const auto name : shadersOrder)
+    {
+        if (shaders.at(name)->isActive())
+            count++;
+    }
+    return count;
+}
+
 void ShaderManager::setInt(ShaderName shader, const char *name, const int value)
 {
     shaders.at(shader)->setUniformValue(name, value);
@@ -67,23 +83,33 @@ void ShaderManager::setFloat(ShaderName shader, const char *name, const float va
     shaders.at(shader)->setUniformValue(name, value);
 }
 
-// TODO this function should not compile (move compile to glwidget)
+// TODO 1 - this function should not compile shaders (move to glwidget)
+// TODO 2 - move whole function to glwidget constructor
 void ShaderManager::initializeContainers()
 {
     Shader* currentShader;
 
     currentShader = new BaseShader();
+    currentShader->setActive();
     shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shaderState.insert(std::make_pair(currentShader->getName(), true));
-    currentShader->compile();
-
-    currentShader = new CorrectionShader();
-    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shaderState.insert(std::make_pair(currentShader->getName(), true));
+    shadersOrder.push_back(currentShader->getName());
     currentShader->compile();
 
     currentShader = new SharpnessShader();
+    currentShader->setActive();
     shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shaderState.insert(std::make_pair(currentShader->getName(), true));
+    shadersOrder.push_back(currentShader->getName());
+    currentShader->compile();
+
+    currentShader = new PixelateShader();
+    currentShader->setActive();
+    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
+    shadersOrder.push_back(currentShader->getName());
+    currentShader->compile();
+
+    currentShader = new CorrectionShader();
+    currentShader->setActive();
+    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
+    shadersOrder.push_back(currentShader->getName());
     currentShader->compile();
 }

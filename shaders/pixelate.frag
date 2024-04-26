@@ -9,7 +9,7 @@ uniform float pixelSize;
 
 void main()
 {
-    vec2 pixelCoords = floor(TexCoords * pixelSize) / pixelSize;
-    vec3 color = texture(screenTexture, pixelCoords).rgb;
-    FragColor = vec4(color, 1.0);
+    //vec2 pixelCoords = floor(TexCoords * pixelSize) / pixelSize;
+    vec3 color = texture(screenTexture, TexCoords).rgb;
+    FragColor = vec4(1.0 - color, 1.0);
 }

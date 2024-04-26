@@ -53,10 +53,14 @@ private:
     GLuint textureColorbuffer;
     GLuint textureColorbuffer2;
 
+    std::vector<GLuint> fbos;
+    std::vector<GLuint> colorBuffers;
+
     void initializeBuffers();
     void updateVertices(QVector<float>& newVertices);
     void closeEvent(QCloseEvent *event) override;
     void useShader(ShaderName shaderName);
+    void createFramebuffers();
 };
 
 #endif // GLWIDGET_H

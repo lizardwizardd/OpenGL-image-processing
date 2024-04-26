@@ -67,35 +67,7 @@ void GLWidget::loadTexture(const QString &filename)
         textureID = this->texture->textureId();
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-
-        // Initialize FBO 1
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glGenTextures(1, &textureColorbuffer);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newTexture->width(),
-              newTexture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D,textureColorbuffer, 0);
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            qDebug() << "Framebuffer not complete!";
-
-        // Initialize FBO 2
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo2);
-        glGenTextures(1, &textureColorbuffer2);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newTexture->width(),
-                     newTexture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D,textureColorbuffer2, 0);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            qDebug() << "Framebuffer not complete!";
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
-
+        createFramebuffers();
 
         // Handle size change
         int windowW = texture->width();
@@ -110,6 +82,8 @@ void GLWidget::loadTexture(const QString &filename)
 
     qint64 elapsedMs = timer.elapsed();
     qDebug() << "loadTexture:" << elapsedMs << "ms";
+
+    this->update(); // TODO apply filter on first load
 }
 
 void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
@@ -136,6 +110,8 @@ void GLWidget::initializeUniforms()
     shaderManager->initializeShader(ShaderName::Correction);
     useShader(ShaderName::Sharpness);
     shaderManager->initializeShader(ShaderName::Sharpness);
+    useShader(ShaderName::Pixelate);
+    shaderManager->initializeShader(ShaderName::Pixelate);
 }
 
 void GLWidget::initializeGL()
@@ -148,8 +124,9 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
+    /*
     // First Pass: Render to FBO using the first shader
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos[0]);
 
     useShader(ShaderName::Base);
     shaderManager->setInt(ShaderName::Base, (char*)"screenTexture", 0);
@@ -160,11 +137,11 @@ void GLWidget::paintGL()
 
 
     // Second pass Render to FBO 2 using the second shader
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo2);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos[1]);
 
     useShader(ShaderName::Sharpness);
     shaderManager->setInt(ShaderName::Sharpness, (char*)"screenTexture", 0);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
 
     glBindVertexArray(vaoNoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -177,10 +154,71 @@ void GLWidget::paintGL()
 
     useShader(ShaderName::Correction);
     shaderManager->setInt(ShaderName::Correction, (char*)"screenTexture", 0);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[1]);
 
     glBindVertexArray(vaoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    */
+
+    ///*
+    int shadersCount = fbos.size() + 1;
+
+    // N-1 passes rendering to FBOs
+    for (int i = 0; i < shadersCount - 1; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+
+        useShader(shaderManager->getShaderOrderByIndex(i));
+        shaderManager->setInt(shaderManager->getShaderOrderByIndex(i),
+                             (char*)"screenTexture", 0);
+
+        glBindTexture(GL_TEXTURE_2D, (i == 0) ? textureID : colorBuffers[i - 1]);
+
+        glBindVertexArray(vaoNoCentering);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    }
+
+    // Last pass: Render to screen using the final shader
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
+
+    useShader(shaderManager->getShaderOrderByIndex(shadersCount - 1));
+    shaderManager->setInt(shaderManager->getShaderOrderByIndex(shadersCount - 1), (char*)"screenTexture", 0);
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[shadersCount - 2]);
+
+    glBindVertexArray(vaoCentering);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    //*/
+}
+
+void GLWidget::createFramebuffers()
+{
+    int shadersCount = shaderManager->countActiveShaders();
+    // Need N-1 FBOs and color buffers
+
+    fbos.resize(shadersCount - 1);
+    colorBuffers.resize(shadersCount - 1);
+
+    glGenFramebuffers(shadersCount - 1, fbos.data());
+    glGenTextures(shadersCount - 1, colorBuffers.data());
+
+    for (int i = 0; i < shadersCount - 1; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width(),
+                     texture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, colorBuffers[i], 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            qDebug() << "Framebuffer not complete!";
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
 }
 
 void GLWidget::resizeEvent(QResizeEvent *event)
@@ -218,6 +256,8 @@ void GLWidget::resizeEvent(QResizeEvent *event)
     shaderManager->setFloat(ShaderName::Sharpness, (char*)"scaleDiff", scaleDiff);
     shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureWidth", texture->width());
     shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureHeight", texture->height());
+    useShader(ShaderName::Pixelate);
+    shaderManager->setFloat(ShaderName::Pixelate, (char*)"scaleDiff", scaleDiff);
 
     QVector<float> vertices1 = {
         -objectWidth,  objectHeight,    0.0f, 1.0f, // TL
