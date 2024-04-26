@@ -77,6 +77,7 @@ void GLWidget::loadTexture(const QString &filename)
         ///windowH = std::clamp(windowH, 150, 1000);
         this->textureAspectRatio = (float)texture->width() / texture->height();
         this->resize(windowW, windowH);
+        this->setMinimumSize(QSize(texture->width(), texture->height()));
         ///emit imageSizeChanged(500, 500);
     }
 
