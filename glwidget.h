@@ -48,11 +48,6 @@ private:
     GLuint textureID;
     QOpenGLTexture* texture = nullptr;
 
-    GLuint fbo;
-    GLuint fbo2;
-    GLuint textureColorbuffer;
-    GLuint textureColorbuffer2;
-
     std::vector<GLuint> fbos;
     std::vector<GLuint> colorBuffers;
 
