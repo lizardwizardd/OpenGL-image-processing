@@ -25,7 +25,8 @@ public:
     void setInt(ShaderName shader, const char* name, const int value);
     void setFloat(ShaderName shader, const char *name, const float value);
 
-    QOpenGLShaderProgram *getShader(ShaderName shaderName);
+    void addShader(Shader* shader);
+    Shader *getShader(ShaderName shaderName);
     ShaderName getShaderOrderByIndex(int i) const;
 
     int countActiveShaders();

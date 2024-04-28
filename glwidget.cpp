@@ -69,16 +69,17 @@ void GLWidget::loadTexture(const QString &filename)
 
         createFramebuffers();
 
+        useShader(ShaderName::Sharpness);
+        shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureWidth", texture->width());
+        shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureHeight", texture->height());
+
         // Handle size change
         int windowW = texture->width();
         int windowH = texture->height();
 
-        ///windowW = std::clamp(windowW, 150, 1820);
-        ///windowH = std::clamp(windowH, 150, 1000);
         this->textureAspectRatio = (float)texture->width() / texture->height();
         this->resize(windowW, windowH);
         this->setMinimumSize(QSize(texture->width(), texture->height()));
-        ///emit imageSizeChanged(500, 500);
     }
 
     qint64 elapsedMs = timer.elapsed();
@@ -113,7 +114,34 @@ void GLWidget::initializeUniforms()
 void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+
+    // Initialize shaderManager and its containers
     shaderManager = new ShaderManager();
+
+    Shader* currentShader;
+
+    currentShader = new BaseShader();
+    currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new SharpnessShader();
+    currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new PixelateShader();
+    currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new CorrectionShader();
+    currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+
+    // Initialize GlWidget
     initializeBuffers();
     initializeUniforms();
 }
@@ -206,16 +234,14 @@ void GLWidget::resizeEvent(QResizeEvent *event)
         scaleDiff = (float)event->size().height() * objectHeight / texture->height();
     }
 
-    useShader(ShaderName::Base);
-    shaderManager->setFloat(ShaderName::Base, (char*)"scaleDiff", scaleDiff);
-    useShader(ShaderName::Correction);
-    shaderManager->setFloat(ShaderName::Correction, (char*)"scaleDiff", scaleDiff);
-    useShader(ShaderName::Sharpness);
-    shaderManager->setFloat(ShaderName::Sharpness, (char*)"scaleDiff", scaleDiff);
-    shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureWidth", texture->width());
-    shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureHeight", texture->height());
-    useShader(ShaderName::Pixelate);
-    shaderManager->setFloat(ShaderName::Pixelate, (char*)"scaleDiff", scaleDiff);
+    // Set uniforms
+    int shadersCount = fbos.size() + 1;
+    for (int i = 0; i < shadersCount; i++)
+    {
+        ShaderName currentShader = shaderManager->getShaderOrderByIndex(i);
+        useShader(currentShader);
+        shaderManager->setFloat(currentShader, (char*)"scaleDiff", scaleDiff);
+    }
 
     QVector<float> vertices1 =
     {

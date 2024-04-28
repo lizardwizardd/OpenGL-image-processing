@@ -46,7 +46,7 @@ void ShaderManager::setAttributeBuffer(ShaderName shader, const char *attribName
                                           tupleSize, stride);
 }
 
-QOpenGLShaderProgram* ShaderManager::getShader(ShaderName shaderName)
+Shader* ShaderManager::getShader(ShaderName shaderName)
 {
     if (shaders.count(shaderName))
         return shaders.at(shaderName);
@@ -83,10 +83,15 @@ void ShaderManager::setFloat(ShaderName shader, const char *name, const float va
     shaders.at(shader)->setUniformValue(name, value);
 }
 
-// TODO 1 - this function should not compile shaders (move to glwidget)
-// TODO 2 - move whole function to glwidget constructor
+void ShaderManager::addShader(Shader *shader)
+{
+    shaders.insert(std::make_pair(shader->getName(), shader));
+    shadersOrder.push_back(shader->getName()); // delete later
+}
+
 void ShaderManager::initializeContainers()
 {
+    /*
     Shader* currentShader;
 
     currentShader = new BaseShader();
@@ -112,4 +117,5 @@ void ShaderManager::initializeContainers()
     shaders.insert(std::make_pair(currentShader->getName(), currentShader));
     shadersOrder.push_back(currentShader->getName());
     currentShader->compile();
+    */
 }
