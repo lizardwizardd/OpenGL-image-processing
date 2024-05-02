@@ -7,6 +7,7 @@
 #include <QParallelAnimationGroup>
 #include <QScrollArea>
 #include <QToolButton>
+#include <QCheckBox>
 #include <QWidget>
 
 class Section : public QWidget
@@ -19,12 +20,17 @@ private:
     QFrame* headerLine;
     QParallelAnimationGroup* toggleAnimation;
     QScrollArea* contentArea;
+    QCheckBox* checkBox;
     int animationDuration;
     int collapsedHeight;
     bool isExpanded = false;
 
+signals:
+    void checkBoxStateChanged(bool checked);
+
 public slots:
     void toggle(bool collapsed);
+    void checkBoxStateChangedSlot(int state);
 
 public:
     static const int DEFAULT_DURATION = 0;

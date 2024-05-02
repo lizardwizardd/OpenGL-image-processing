@@ -8,6 +8,7 @@
 Section::Section(const QString& title, const int animationDuration, QWidget* parent)
     : QWidget(parent), animationDuration(animationDuration)
 {
+    checkBox = new QCheckBox(this);
     toggleButton = new QToolButton(this);
     headerLine = new QFrame(this);
     toggleAnimation = new QParallelAnimationGroup(this);
@@ -17,6 +18,7 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     toggleButton->setStyleSheet("QToolButton {border: none;}");
     toggleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toggleButton->setArrowType(Qt::ArrowType::RightArrow);
+    toggleButton->setIconSize(QSize(10, 10));
     toggleButton->setText(title);
     toggleButton->setCheckable(true);
     toggleButton->setChecked(false);
@@ -40,12 +42,19 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     int row = 0;
-    mainLayout->addWidget(toggleButton, row, 0, 1, 1, Qt::AlignLeft);
+    mainLayout->addWidget(checkBox, 0, 0, 1, 1, Qt::AlignLeft);
+    mainLayout->addWidget(toggleButton, 0, 1, 1, 1, Qt::AlignLeft);
     mainLayout->addWidget(headerLine, row++, 2, 1, 1);
     mainLayout->addWidget(contentArea, row, 0, 1, 3);
     setLayout(mainLayout);
 
     connect(toggleButton, &QToolButton::toggled, this, &Section::toggle);
+    connect(checkBox, &QCheckBox::stateChanged, this, &Section::checkBoxStateChangedSlot);
+}
+
+void Section::checkBoxStateChangedSlot(int state)
+{
+    emit checkBoxStateChanged(state == Qt::Checked);
 }
 
 void Section::toggle(bool expanded)
