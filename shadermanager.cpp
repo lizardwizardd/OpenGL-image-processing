@@ -73,6 +73,11 @@ int ShaderManager::countActiveShaders()
     return count;
 }
 
+int ShaderManager::getShaderCount()
+{
+    return shadersOrder.size();
+}
+
 void ShaderManager::setInt(ShaderName shader, const char *name, const int value)
 {
     shaders.at(shader)->setUniformValue(name, value);

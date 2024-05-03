@@ -56,6 +56,7 @@ MainWindow::MainWindow()
 
     // COLOR CORRECTION
     Section* sectionCorrection = new Section("Color correction", 0, mainWidget);
+    //connect(sectionCorrection, &Section::checkBoxStateChanged, glWidget, )
     QVBoxLayout* correctionLayout = new QVBoxLayout();
 
     // Exposure

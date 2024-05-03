@@ -88,29 +88,6 @@ void GLWidget::loadTexture(const QString &filename)
     this->update(); // TODO apply filter on first load
 }
 
-void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
-                                  const char* uniformName)
-{
-    if (!shaderManager)
-    {
-        return; // allowing to change shader parameters before file was opened
-    }
-    useShader(shaderName);
-    shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
-    qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
-    this->update();
-}
-
-void GLWidget::initializeUniforms()
-{
-    useShader(ShaderName::Correction);
-    shaderManager->initializeShader(ShaderName::Correction);
-    useShader(ShaderName::Sharpness);
-    shaderManager->initializeShader(ShaderName::Sharpness);
-    useShader(ShaderName::Pixelate);
-    shaderManager->initializeShader(ShaderName::Pixelate);
-}
-
 void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
@@ -146,8 +123,182 @@ void GLWidget::initializeGL()
     initializeUniforms();
 }
 
+void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
+                                  const char* uniformName)
+{
+    if (!shaderManager)
+    {
+        return; // allowing to change shader parameters before file was opened
+    }
+    useShader(shaderName);
+    shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
+    qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
+    this->update();
+}
+
+void GLWidget::initializeUniforms()
+{
+    for (int i = 0; i < shaderManager->getShaderCount(); i++)
+    {
+        ShaderName current = shaderManager->getShaderOrderByIndex(i);
+        useShader(current);
+        shaderManager->initializeShader(current);
+    }
+
+    /*
+    int activeShadersCount = shaderManager->countActiveShaders();
+    for (int i = 0; i < activeShadersCount; i++)
+    {
+        ShaderName current = shaderManager->getShaderOrderByIndex(i);
+        useShader(current);
+        shaderManager->initializeShader(current);
+    }
+    */
+}
+
+// Initialize framebuffers based on the number of active shaders
+void GLWidget::createFramebuffers()
+{
+    int shadersCount = shaderManager->getShaderCount();
+    int activeShadersCount = shaderManager->countActiveShaders();
+
+    fbos.resize(shadersCount - 1, 0);
+    colorBuffers.resize(shadersCount - 1, 0);
+
+    glGenFramebuffers(shadersCount - 1, fbos.data());
+    glGenTextures(shadersCount - 1, colorBuffers.data());
+
+    // Create a framebuffer for each active shader except the last one
+    int buffersCreated = 0;
+    for (int i = 0; i < shadersCount - 1; i++)
+    {
+        // Dont create framebuffer if shader at i is inactive
+        if (!shaderManager->getShader(shaderManager->
+            getShaderOrderByIndex(i))->isActive())
+        {
+            fbos[i] = 0;
+            colorBuffers[i] = 0;
+            continue;
+        }
+
+        // Dont create framebuffer for the last active shader
+        if (buffersCreated + 1 >= activeShadersCount)
+        {
+            break;
+        }
+
+        buffersCreated++;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width(),
+                     texture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, colorBuffers[i], 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            qDebug() << "Framebuffer not complete!";
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
+
+    /*
+    int activeShadersCount = shaderManager->countActiveShaders();
+    // Need N-1 FBOs and color buffers
+
+    fbos.resize(activeShadersCount - 1);
+    colorBuffers.resize(activeShadersCount - 1);
+
+    glGenFramebuffers(activeShadersCount - 1, fbos.data());
+    glGenTextures(activeShadersCount - 1, colorBuffers.data());
+
+    for (int i = 0; i < activeShadersCount - 1; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width(),
+                     texture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, colorBuffers[i], 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            qDebug() << "Framebuffer not complete!";
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
+    */
+}
+
 void GLWidget::paintGL()
 {
+    int shadersCount = shaderManager->getShaderCount();
+    int activeShadersCount = shaderManager->countActiveShaders();
+
+    // N-1 passes rendering to FBOs
+    int timesRendered = 0;
+    int i = 0;
+    int lastFboIndex = -1;
+    for (; i < shadersCount; i++)
+    {
+        // Dont use framebuffer for last active shader
+        if (timesRendered + 1 >= activeShadersCount)
+        {
+            lastFboIndex = i - 1;
+            break;
+        }
+
+        if (fbos[i] == 0)
+        {
+            continue; // skip inactive
+        }
+
+        timesRendered++;
+
+        /*
+        if (!shaderManager->getShader(shaderManager->
+            getShaderOrderByIndex(i))->isActive())
+        {
+            continue; // skip inactive
+        }
+        */
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+
+        useShader(shaderManager->getShaderOrderByIndex(i));
+        shaderManager->setInt(shaderManager->getShaderOrderByIndex(i),
+                              (char*)"screenTexture", 0);
+
+        glBindTexture(GL_TEXTURE_2D, (i == 0) ? textureID : colorBuffers[i - 1]);
+
+        glBindVertexArray(vaoNoCentering);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    }
+
+    // skip to the last active shader
+    while (fbos[i] == 0)
+    {
+        i++;
+    }
+
+
+    // Render to screen using the last active shader
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
+
+    useShader(shaderManager->getShaderOrderByIndex(i));
+    shaderManager->setInt(shaderManager->getShaderOrderByIndex(i),
+                         (char*)"screenTexture", 0);
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[lastFboIndex]); // todo: case for 1 active shader
+
+    glBindVertexArray(vaoCentering);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    /* // IGNORE INACTIVE
     int shadersCount = fbos.size() + 1;
 
     // N-1 passes rendering to FBOs
@@ -165,6 +316,7 @@ void GLWidget::paintGL()
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     }
 
+
     // Last pass: Render to screen using the final shader
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -176,35 +328,7 @@ void GLWidget::paintGL()
 
     glBindVertexArray(vaoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}
-
-void GLWidget::createFramebuffers()
-{
-    int shadersCount = shaderManager->countActiveShaders();
-    // Need N-1 FBOs and color buffers
-
-    fbos.resize(shadersCount - 1);
-    colorBuffers.resize(shadersCount - 1);
-
-    glGenFramebuffers(shadersCount - 1, fbos.data());
-    glGenTextures(shadersCount - 1, colorBuffers.data());
-
-    for (int i = 0; i < shadersCount - 1; i++)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
-        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width(),
-                     texture->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D, colorBuffers[i], 0);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            qDebug() << "Framebuffer not complete!";
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
+    */
 }
 
 void GLWidget::resizeEvent(QResizeEvent *event)
@@ -284,11 +408,11 @@ void GLWidget::initializeBuffers()
          1.0f,  1.0f,  1.0f, 1.0f  // top right
     };
 
-    // VAO STATIC
+    // VAO
     glGenVertexArrays(1, &vaoNoCentering);
     glBindVertexArray(vaoNoCentering);
 
-    // VBO STATIC
+    // VBO
     glGenBuffers(1, &vboNoCentering);
     glBindBuffer(GL_ARRAY_BUFFER, vboNoCentering);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);

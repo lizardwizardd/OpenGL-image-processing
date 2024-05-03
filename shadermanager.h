@@ -31,6 +31,7 @@ public:
 
     int countActiveShaders();
 
+    int getShaderCount();
 private:
     std::unordered_map<ShaderName, Shader*> shaders;
     std::vector<ShaderName> shadersOrder;

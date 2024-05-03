@@ -12,11 +12,6 @@ enum class ShaderName
     Count
 };
 
-// TODO:
-// base Shader, inherited ShaderWithSliders
-// virtual initializeGUI in Shader, overloaded in inherited classes
-// create different shaders by passing values
-
 class Shader : public QOpenGLShaderProgram
 {
 public:
