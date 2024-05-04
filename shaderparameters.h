@@ -14,6 +14,15 @@ enum class ShaderName
 
 class Shader : public QOpenGLShaderProgram
 {
+protected:
+    // min, max, default, uniform name, display name
+    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
+
+    QString vertexShaderPath;
+    QString fragmentShaderPath;
+    ShaderName name;
+    bool state;
+
 public:
     Shader(const QString& vertexPath, const QString& fragmentPath, ShaderName shaderName, bool activeState = false) :
         vertexShaderPath(vertexPath),
@@ -37,36 +46,19 @@ public:
         return true;
     }
 
-    ShaderName getName() const
-    {
-        return name;
-    }
-
-    bool isActive()
-    {
-        return state;
-    }
-
-    void setActive()
-    {
-        state = true;
-    }
-
-    void setInactive()
-    {
-        state = false;
-    }
-
     virtual void initializeUniforms() = 0;
 
-protected:
-    // min, max, default, uniform name, display name
-    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
+    ShaderName getName() const
+        { return name; }
 
-    QString vertexShaderPath;
-    QString fragmentShaderPath;
-    ShaderName name;
-    bool state;
+    bool isActive()
+        { return state; }
+
+    void setActive()
+        { state = true; }
+
+    void setInactive()
+        { state = false; }
 };
 
 
@@ -145,7 +137,7 @@ public:
             "F:/Programming/OpenGL-image-processing/shaders/pixelate.frag",
             ShaderName::Pixelate) {}
 
-    static constexpr ValueTuple pixeSizeVals = {100, 50000, 100, "pixelSize", "{Pixel Size"};
+    static constexpr ValueTuple pixeSizeVals = {100, 50000, 100, "pixelSize", "Pixel Size"};
 
     void initializeUniforms() override
     {

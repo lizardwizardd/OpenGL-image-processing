@@ -22,10 +22,10 @@ public:
     ~GLWidget();
 
     void loadTexture(const QString &filename);
-
+    void initializeUniforms();
     void changeUniformValue(int sliderValue, ShaderName shaderName,
                             const char* uniformName);
-    void initializeUniforms();
+    void handleShaderToggled(bool state, ShaderName shaderName);
 
 signals:
     void imageSizeChanged(int width, int height);

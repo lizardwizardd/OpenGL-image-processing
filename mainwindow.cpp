@@ -54,9 +54,27 @@ MainWindow::MainWindow()
     // SHADER SETTINGS SETUP
     // ---------------------
 
+    auto connectSectionToShader = [&](Section* section, ShaderName shader)
+    {
+        connect(section, &Section::checkBoxStateChanged, glWidget,
+            [this, shader](bool state)
+            {
+                glWidget->handleShaderToggled(state, shader);
+            }
+        );
+    };
+
+
     // COLOR CORRECTION
     Section* sectionCorrection = new Section("Color correction", 0, mainWidget);
-    //connect(sectionCorrection, &Section::checkBoxStateChanged, glWidget, )
+    connectSectionToShader(sectionCorrection, ShaderName::Correction);
+    /*
+    connect(sectionCorrection, &Section::checkBoxStateChanged, glWidget,
+            [this](bool state)
+            {
+                glWidget->handleShaderToggled(state, ShaderName::Correction);
+            });
+    */
     QVBoxLayout* correctionLayout = new QVBoxLayout();
 
     // Exposure
@@ -81,8 +99,10 @@ MainWindow::MainWindow()
     sectionCorrection->setContentLayout(*correctionLayout);
     layout->addWidget(sectionCorrection);
 
+
     // SHARPNESS
     Section* sectionSharpness = new Section("Sharpness", 0, mainWidget);
+    connectSectionToShader(sectionSharpness, ShaderName::Sharpness);
     QVBoxLayout* sharpnessLayout = new QVBoxLayout();
 
     // Strength
@@ -92,8 +112,10 @@ MainWindow::MainWindow()
     sectionSharpness->setContentLayout(*sharpnessLayout);
     layout->addWidget(sectionSharpness);
 
+
     // PIXELATE
     Section* sectionPixelate = new Section("Pixelate", 0, mainWidget);
+    connectSectionToShader(sectionPixelate, ShaderName::Pixelate);
     QVBoxLayout* pixelateLayout = new QVBoxLayout();
 
     // Pixel size

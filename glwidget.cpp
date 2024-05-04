@@ -97,23 +97,24 @@ void GLWidget::initializeGL()
 
     Shader* currentShader;
 
+    // Shaders are initialized inactive (except the base shader)
     currentShader = new BaseShader();
     currentShader->setActive();
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
     currentShader = new SharpnessShader();
-    currentShader->setActive();
+    //currentShader->setActive();
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
     currentShader = new PixelateShader();
-    currentShader->setActive();
+    //currentShader->setActive();
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
     currentShader = new CorrectionShader();
-    currentShader->setActive();
+    //currentShader->setActive();
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
@@ -133,6 +134,14 @@ void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
     useShader(shaderName);
     shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
     qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
+    this->update();
+}
+
+void GLWidget::handleShaderToggled(bool state, ShaderName shaderName)
+{
+    shaderManager->setShaderState(shaderName, state);
+    //todo deallocate (?)
+    createFramebuffers();
     this->update();
 }
 

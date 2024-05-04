@@ -62,6 +62,14 @@ ShaderName ShaderManager::getShaderOrderByIndex(int i) const
     return shadersOrder[i];
 }
 
+void ShaderManager::setShaderState(ShaderName shaderName, bool state)
+{
+    if (state)
+        shaders.at(shaderName)->setActive();
+    else
+        shaders.at(shaderName)->setInactive();
+}
+
 int ShaderManager::countActiveShaders()
 {
     int count = 0;

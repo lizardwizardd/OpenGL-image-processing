@@ -21,17 +21,17 @@ public:
     void setAttributeBuffer(ShaderName shader, const char* attribName,
                             GLenum type, int offset, int tupleSize, int stride);
 
-    // Uniform setters
     void setInt(ShaderName shader, const char* name, const int value);
     void setFloat(ShaderName shader, const char *name, const float value);
 
     void addShader(Shader* shader);
     Shader *getShader(ShaderName shaderName);
     ShaderName getShaderOrderByIndex(int i) const;
+    void setShaderState(ShaderName shaderName, bool state);
 
     int countActiveShaders();
-
     int getShaderCount();
+
 private:
     std::unordered_map<ShaderName, Shader*> shaders;
     std::vector<ShaderName> shadersOrder;
