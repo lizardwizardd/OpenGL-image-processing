@@ -247,6 +247,24 @@ void GLWidget::paintGL()
     int shadersCount = shaderManager->getShaderCount();
     int activeShadersCount = shaderManager->countActiveShaders();
 
+    if (activeShadersCount == 1)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
+
+        useShader(shaderManager->getShaderOrderByIndex(0));
+        shaderManager->setInt(shaderManager->getShaderOrderByIndex(0),
+                              (char*)"screenTexture", 0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        glBindVertexArray(vaoCentering);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+        return;
+    }
+
+
     // N-1 passes rendering to FBOs
     int timesRendered = 0;
     int i = 0;
@@ -302,7 +320,7 @@ void GLWidget::paintGL()
     useShader(shaderManager->getShaderOrderByIndex(i));
     shaderManager->setInt(shaderManager->getShaderOrderByIndex(i),
                          (char*)"screenTexture", 0);
-    glBindTexture(GL_TEXTURE_2D, colorBuffers[lastFboIndex]); // todo: case for 1 active shader
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[lastFboIndex]);
 
     glBindVertexArray(vaoCentering);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
