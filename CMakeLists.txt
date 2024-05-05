@@ -32,6 +32,8 @@ set(PROJECT_SOURCES
         shaders/sharpness.frag
         shaders/pixelate.frag
         shaders/pixelate.vert
+
+        resources.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

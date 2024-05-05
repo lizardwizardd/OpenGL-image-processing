@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QOpenGLShaderProgram>
+#include <QApplication>
 
 enum class ShaderName
 {
@@ -67,8 +68,8 @@ class BaseShader : public Shader
 {
 public:
     BaseShader() : Shader(
-            "F:/Programming/OpenGL-image-processing/shaders/base.vert",
-            "F:/Programming/OpenGL-image-processing/shaders/base.frag",
+            ":/shaders/base.vert",
+            ":/shaders/base.frag",
             ShaderName::Base) {}
 
     void initializeUniforms() override {}
@@ -80,8 +81,8 @@ class CorrectionShader : public Shader
 {
 public:
     CorrectionShader() : Shader(
-            "F:/Programming/OpenGL-image-processing/shaders/correction.vert",
-            "F:/Programming/OpenGL-image-processing/shaders/correction.frag",
+            ":/shaders/correction.vert",
+            ":/shaders/correction.frag",
             ShaderName::Correction) {}
 
     static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure", "Exposure"};
@@ -115,8 +116,8 @@ class SharpnessShader : public Shader
 {
 public:
     SharpnessShader() : Shader(
-            "F:/Programming/OpenGL-image-processing/shaders/sharpness.vert",
-            "F:/Programming/OpenGL-image-processing/shaders/sharpness.frag",
+            ":/shaders/sharpness.vert",
+            ":/shaders/sharpness.frag",
             ShaderName::Sharpness) {}
 
     static constexpr ValueTuple strengthVals = {0, 100, 50, "strength", "Strength"};
@@ -133,8 +134,8 @@ class PixelateShader : public Shader
 {
 public:
     PixelateShader() : Shader(
-            "F:/Programming/OpenGL-image-processing/shaders/pixelate.vert",
-            "F:/Programming/OpenGL-image-processing/shaders/pixelate.frag",
+            ":/shaders/pixelate.vert",
+            ":/shaders/pixelate.frag",
             ShaderName::Pixelate) {}
 
     static constexpr ValueTuple pixeSizeVals = {100, 50000, 100, "pixelSize", "Pixel Size"};

@@ -1,0 +1,12 @@
+<RCC>
+    <qresource>
+        <file>shaders/base.frag</file>
+        <file>shaders/base.vert</file>
+        <file>shaders/correction.frag</file>
+        <file>shaders/correction.vert</file>
+        <file>shaders/pixelate.frag</file>
+        <file>shaders/pixelate.vert</file>
+        <file>shaders/sharpness.frag</file>
+        <file>shaders/sharpness.vert</file>
+    </qresource>
+</RCC>
