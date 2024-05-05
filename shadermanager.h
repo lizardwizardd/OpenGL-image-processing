@@ -16,7 +16,6 @@ public:
 
     GLuint getProgramId(ShaderName shader);
     void initializeShader(ShaderName shaderName);
-    void useProgram(ShaderName shader);
     void disableAttributeArray(ShaderName shader, const char* attribName);
     void setAttributeBuffer(ShaderName shader, const char* attribName,
                             GLenum type, int offset, int tupleSize, int stride);
@@ -35,8 +34,6 @@ public:
 private:
     std::unordered_map<ShaderName, Shader*> shaders;
     std::vector<ShaderName> shadersOrder;
-
-    void initializeContainers();
 };
 
 #endif // SHADERMANAGER_H

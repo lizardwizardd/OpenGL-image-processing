@@ -3,9 +3,7 @@
 #include <QOpenGLFunctions>
 
 ShaderManager::ShaderManager()
-{
-    initializeContainers();
-}
+{}
 
 ShaderManager::~ShaderManager()
 {
@@ -21,11 +19,6 @@ GLuint ShaderManager::getProgramId(ShaderName shader)
 void ShaderManager::initializeShader(ShaderName shaderName)
 {
     shaders.at(shaderName)->initializeUniforms();
-}
-
-void ShaderManager::useProgram(ShaderName shader)
-{
-    ///glUseProgram(getShader(shader)->programId());
 }
 
 void ShaderManager::disableAttributeArray(ShaderName shader, const char* attribName)
@@ -100,35 +93,4 @@ void ShaderManager::addShader(Shader *shader)
 {
     shaders.insert(std::make_pair(shader->getName(), shader));
     shadersOrder.push_back(shader->getName()); // delete later
-}
-
-void ShaderManager::initializeContainers()
-{
-    /*
-    Shader* currentShader;
-
-    currentShader = new BaseShader();
-    currentShader->setActive();
-    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shadersOrder.push_back(currentShader->getName());
-    currentShader->compile();
-
-    currentShader = new SharpnessShader();
-    currentShader->setActive();
-    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shadersOrder.push_back(currentShader->getName());
-    currentShader->compile();
-
-    currentShader = new PixelateShader();
-    currentShader->setActive();
-    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shadersOrder.push_back(currentShader->getName());
-    currentShader->compile();
-
-    currentShader = new CorrectionShader();
-    currentShader->setActive();
-    shaders.insert(std::make_pair(currentShader->getName(), currentShader));
-    shadersOrder.push_back(currentShader->getName());
-    currentShader->compile();
-    */
 }
