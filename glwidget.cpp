@@ -27,6 +27,41 @@ GLWidget::~GLWidget()
     doneCurrent();
 }
 
+void GLWidget::initializeGL()
+{
+    initializeOpenGLFunctions();
+
+    // Initialize shaderManager and its containers
+    shaderManager = new ShaderManager();
+
+    Shader* currentShader;
+
+    // Shaders are initialized inactive (except the base shader)
+    currentShader = new BaseShader();
+    currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new SharpnessShader();
+    //currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new PixelateShader();
+    //currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new CorrectionShader();
+    //currentShader->setActive();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    // Initialize GlWidget
+    initializeBuffers();
+    initializeUniforms();
+}
+
 void GLWidget::loadTexture(const QString &filename)
 {
     QElapsedTimer timer;
@@ -86,42 +121,6 @@ void GLWidget::loadTexture(const QString &filename)
     qDebug() << "loadTexture:" << elapsedMs << "ms";
 
     this->update(); // TODO apply filter on first load
-}
-
-void GLWidget::initializeGL()
-{
-    initializeOpenGLFunctions();
-
-    // Initialize shaderManager and its containers
-    shaderManager = new ShaderManager();
-
-    Shader* currentShader;
-
-    // Shaders are initialized inactive (except the base shader)
-    currentShader = new BaseShader();
-    currentShader->setActive();
-    shaderManager->addShader(currentShader);
-    currentShader->compile();
-
-    currentShader = new SharpnessShader();
-    //currentShader->setActive();
-    shaderManager->addShader(currentShader);
-    currentShader->compile();
-
-    currentShader = new PixelateShader();
-    //currentShader->setActive();
-    shaderManager->addShader(currentShader);
-    currentShader->compile();
-
-    currentShader = new CorrectionShader();
-    //currentShader->setActive();
-    shaderManager->addShader(currentShader);
-    currentShader->compile();
-
-
-    // Initialize GlWidget
-    initializeBuffers();
-    initializeUniforms();
 }
 
 void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
@@ -268,13 +267,13 @@ void GLWidget::paintGL()
     // N-1 passes rendering to FBOs
     int timesRendered = 0;
     int i = 0;
-    int lastFboIndex = -1;
+    int lastFboIndex = 0;
     for (; i < shadersCount; i++)
     {
         // Dont use framebuffer for last active shader
         if (timesRendered + 1 >= activeShadersCount)
         {
-            lastFboIndex = i - 1;
+            //lastFboIndex = i - 1;
             break;
         }
 
@@ -299,10 +298,12 @@ void GLWidget::paintGL()
         shaderManager->setInt(shaderManager->getShaderOrderByIndex(i),
                               (char*)"screenTexture", 0);
 
-        glBindTexture(GL_TEXTURE_2D, (i == 0) ? textureID : colorBuffers[i - 1]);
+        glBindTexture(GL_TEXTURE_2D, (i == 0) ? textureID : colorBuffers[lastFboIndex]);
 
         glBindVertexArray(vaoNoCentering);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+        lastFboIndex = i;
     }
 
     // skip to the last active shader
