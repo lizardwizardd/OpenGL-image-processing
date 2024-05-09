@@ -63,6 +63,11 @@ void ShaderManager::setShaderState(ShaderName shaderName, bool state)
         shaders.at(shaderName)->setInactive();
 }
 
+bool ShaderManager::getShaderState(ShaderName shaderName) const
+{
+    return shaders.at(shaderName)->isActive();
+}
+
 int ShaderManager::countActiveShaders()
 {
     int count = 0;

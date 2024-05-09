@@ -66,7 +66,23 @@ void GLWidget::loadTexture(const QString &filename)
 
     this->show();
 
-    QOpenGLTexture* newTexture = new QOpenGLTexture(QImage(filename).mirrored());
+    QImage originalImage(filename);
+    QSize imageSize = originalImage.size();
+
+    // Scale down if bigger than 1920x1000
+    if (imageSize.width() > 1920 || imageSize.height() > 1000)
+    {
+        qreal scaleFactor = qMin(1920.0f / imageSize.width(), 1000.0f / imageSize.height());
+        originalImage = originalImage.scaled(imageSize * scaleFactor,
+                        Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QMessageBox messageBox;
+        messageBox.setWindowTitle("Image is too big");
+        messageBox.setText("Image is too big, it will be scaled down.");
+        messageBox.setIcon(QMessageBox::Information);
+        messageBox.exec();
+    }
+
+    QOpenGLTexture* newTexture = new QOpenGLTexture(originalImage.mirrored());
     newTexture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
     newTexture->setMagnificationFilter(QOpenGLTexture::Linear);
 
@@ -125,6 +141,24 @@ void GLWidget::paintGL()
     int shadersCount = shaderManager->getShaderCount();
     int activeShadersCount = shaderManager->countActiveShaders();
 
+    // UNIFORMS
+
+    // Set scaleDiff to all shaders except the last one
+    ShaderName lastActiveShader = ShaderName::Base; // first, always active
+    for (int i = 0; i < shadersCount; i++)
+    {
+        ShaderName currentShader = shaderManager->getShaderOrderByIndex(i);
+        if (shaderManager->getShaderState(currentShader))
+            lastActiveShader = currentShader;
+
+        useShader(currentShader);
+        shaderManager->setFloat(currentShader, (char*)"scaleDiff", scaleDiff);
+    }
+    useShader(lastActiveShader);
+    shaderManager->setFloat(lastActiveShader, (char*)"scaleDiff", 1.0f);
+
+    // RENDER
+
     if (activeShadersCount == 1)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -142,7 +176,6 @@ void GLWidget::paintGL()
         return;
     }
 
-
     // N-1 passes rendering to FBOs
     int timesRendered = 0;
     int i = 0;
@@ -151,26 +184,18 @@ void GLWidget::paintGL()
     {
         // Dont use framebuffer for last active shader
         if (timesRendered + 1 >= activeShadersCount)
-        {
-            //lastFboIndex = i - 1;
             break;
-        }
 
         if (fbos[i] == 0)
-        {
             continue; // skip inactive
-        }
 
         timesRendered++;
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
-
         useShader(shaderManager->getShaderOrderByIndex(i));
         shaderManager->setInt(shaderManager->getShaderOrderByIndex(i),
                               (char*)"screenTexture", 0);
-
         glBindTexture(GL_TEXTURE_2D, (i == 0) ? textureID : colorBuffers[lastFboIndex]);
-
         glBindVertexArray(vaoNoCentering);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -205,7 +230,6 @@ void GLWidget::resizeEvent(QResizeEvent *event)
         return;
     }
 
-    float scaleDiff;
     float objectWidth, objectHeight;
     float windowAspectRatio = (float)(event->size().width()) /
                               event->size().height();
@@ -224,21 +248,28 @@ void GLWidget::resizeEvent(QResizeEvent *event)
         scaleDiff = (float)event->size().height() * objectHeight / texture->height();
     }
 
-    // Set uniforms
+    // Set scaleDiff to all shaders except the last one
     int shadersCount = fbos.size() + 1;
+    ShaderName lastActiveShader = ShaderName::Base; // first, always active
     for (int i = 0; i < shadersCount; i++)
     {
         ShaderName currentShader = shaderManager->getShaderOrderByIndex(i);
+        if (shaderManager->getShaderState(currentShader))
+            lastActiveShader = currentShader;
+
         useShader(currentShader);
         shaderManager->setFloat(currentShader, (char*)"scaleDiff", scaleDiff);
     }
+    useShader(lastActiveShader);
+    shaderManager->setFloat(lastActiveShader, (char*)"scaleDiff", 1.0f);
 
+    // Update vertices
     QVector<float> vertices1 =
         {
             -objectWidth,  objectHeight,    0.0f, 1.0f, // TL
             -objectWidth, -objectHeight,    0.0f, 0.0f, // BL
-            objectWidth, -objectHeight,    1.0f, 0.0f, // BR
-            objectWidth,  objectHeight,    1.0f, 1.0f  // TR
+             objectWidth, -objectHeight,    1.0f, 0.0f, // BR
+             objectWidth,  objectHeight,    1.0f, 1.0f  // TR
         };
 
     QVector<float> vertices2 =
@@ -267,8 +298,8 @@ void GLWidget::initializeBuffers()
         // positions   // texture coords
         -1.0f,  1.0f,  0.0f, 1.0f, // top left
         -1.0f, -1.0f,  0.0f, 0.0f, // bottom left
-        1.0f, -1.0f,  1.0f, 0.0f, // bottom right
-        1.0f,  1.0f,  1.0f, 1.0f  // top right
+         1.0f, -1.0f,  1.0f, 0.0f, // bottom right
+         1.0f,  1.0f,  1.0f, 1.0f  // top right
     };
 
     // VAO

@@ -36,6 +36,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
+    float scaleDiff;
     float textureAspectRatio = 0.0f;
     ShaderManager* shaderManager = nullptr;
     QMainWindow* parent = nullptr;
