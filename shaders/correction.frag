@@ -10,6 +10,11 @@ uniform float contrast;    // [0; 2]  = 1.0
 uniform float temperature; // [0; 2]  = 0.5
 uniform float saturation;  // [0; 2]  = 1.0
 uniform float brightness;  // [-1; 1] = 0.0
+uniform float tintIntensity;
+uniform float filterIntensity;
+
+uniform vec3 tintColor;
+uniform vec3 filterColor;
 
 const float LuminancePreservationFactor = 1.0;
 
@@ -58,9 +63,18 @@ vec3 adjustSaturation(vec3 color, float saturation)
     return mix(grayscale, color, saturation);
 }
 
+vec3 adjustTint(vec3 color, vec3 tintColor, float tintIntensity)
+{
+    vec3 tintedColor = mix(color, mix(vec3(dot(color, vec3(0.2126, 0.7152, 0.0722))),
+                       tintColor, tintIntensity), tintIntensity);
+    return tintedColor;
+}
+
 void main()
 {
     vec3 col = texture2D(screenTexture, TexCoords).rgb;
+    col = mix(col, col * vec3(0.9f, 0.0f, 0.0f), filterIntensity);
+    col = adjustTint(col, vec3(0.9f, 0.0f, 0.0f), tintIntensity);
     col = adjustTemperature(col, temperature);
     col = adjustExposure(col, exposure);
     col = adjustContrast(col, contrast);

@@ -406,6 +406,8 @@ void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
 
 void GLWidget::handleShaderToggled(bool state, ShaderName shaderName)
 {
+    if (!shaderManager)
+        return;
     shaderManager->setShaderState(shaderName, state);
 
     glDeleteFramebuffers(fbos.size(), fbos.data());

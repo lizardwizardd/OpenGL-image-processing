@@ -57,10 +57,17 @@ ShaderName ShaderManager::getShaderOrderByIndex(int i) const
 
 void ShaderManager::setShaderState(ShaderName shaderName, bool state)
 {
-    if (state)
-        shaders.at(shaderName)->setActive();
-    else
-        shaders.at(shaderName)->setInactive();
+    try
+    {
+        if (state)
+            shaders.at(shaderName)->setActive();
+        else
+            shaders.at(shaderName)->setInactive();
+    } catch (...)
+    {
+        qDebug() << "error throw at setShaderState";
+    }
+
 }
 
 bool ShaderManager::getShaderState(ShaderName shaderName) const

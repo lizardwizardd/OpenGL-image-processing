@@ -96,6 +96,14 @@ MainWindow::MainWindow()
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::brightnessVals));
 
+    // Color tint
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
+                                                  CorrectionShader::tintIntensity));
+
+    // Color filter
+    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
+                                                  CorrectionShader::filterIntensity));
+
     sectionCorrection->setContentLayout(*correctionLayout);
     layout->addWidget(sectionCorrection);
 
@@ -176,8 +184,7 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
     lineEdit->setValidator(new QIntValidator(
         std::get<0>(parameters),
         std::get<1>(parameters))
-                           );
-    // TODO connect lineEdit
+    );
 
     QLabel* label = new QLabel(std::get<4>(parameters));
     label->setMinimumWidth(110);

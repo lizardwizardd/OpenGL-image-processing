@@ -9,6 +9,7 @@
 #include <QToolButton>
 #include <QCheckBox>
 #include <QWidget>
+#include <QPushButton>
 
 class Section : public QWidget
 {
