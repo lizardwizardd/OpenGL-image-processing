@@ -90,8 +90,8 @@ public:
     static constexpr ValueTuple temperatureVals = {-100, 100, 0, "temperature", "Temperature"};
     static constexpr ValueTuple saturationVals  = {0,    200, 100, "saturation", "Saturation"};
     static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness", "Brightness"};
-    static constexpr ValueTuple tintIntensity   = {0,    100, 0, "tintIntensity", "Color tint intensity"};
-    static constexpr ValueTuple filterIntensity = {0,    100, 0, "filterIntensity", "Color filter intensity"};
+    static constexpr ValueTuple tintIntensity   = {0,    100, 0, "tintIntensity", "Tint intensity"};
+    static constexpr ValueTuple filterIntensity = {0,    100, 0, "filterIntensity", "Filter intensity"};
 
     void initializeUniforms() override
     {
@@ -109,6 +109,12 @@ public:
 
         setUniformValue(std::get<3>(brightnessVals),
                         std::get<2>(brightnessVals) / 100.0f);
+
+        setUniformValue(std::get<3>(tintIntensity),
+                        std::get<2>(tintIntensity) / 100.0f);
+
+        setUniformValue(std::get<3>(filterIntensity),
+                        std::get<2>(filterIntensity) / 100.0f);
     }
 };
 

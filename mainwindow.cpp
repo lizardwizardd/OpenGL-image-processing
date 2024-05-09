@@ -177,22 +177,36 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
 
     QLineEdit* lineEdit = new QLineEdit(QString::number(std::get<2>(parameters)));
     lineEdit->setStyleSheet("QLineEdit {background: rgb(240, 240, 240);}");
-    lineEdit->setMaximumWidth(30);
-    lineEdit->setMaximumHeight(20);
+    lineEdit->setFixedSize(20, 18);
     lineEdit->setAlignment(Qt::AlignCenter);
     lineEdit->setFrame(false);
     lineEdit->setValidator(new QIntValidator(
         std::get<0>(parameters),
         std::get<1>(parameters))
-    );
+                           );
 
     QLabel* label = new QLabel(std::get<4>(parameters));
-    label->setMinimumWidth(110);
+    label->setFixedWidth(100);
+
+    QPushButton* resetButton = new QPushButton(this);
+    QFont buttonFont = resetButton->font();
+    buttonFont.setItalic(true); // Set italic style
+    resetButton->setFont(buttonFont);
+    resetButton->setText("reset");
+    resetButton->setFixedSize(40, 20);
+    resetButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
 
     QHBoxLayout* horizLayoutLabel = new QHBoxLayout();
     horizLayoutLabel->setAlignment(Qt::AlignLeft);
-    horizLayoutLabel->addWidget(label, 0, Qt::AlignLeft);
-    horizLayoutLabel->addWidget(lineEdit, 0, Qt::AlignLeft);
+    horizLayoutLabel->addWidget(label);
+    horizLayoutLabel->addStretch();
+    horizLayoutLabel->addWidget(lineEdit);
+    horizLayoutLabel->addStretch();
+    QSpacerItem* spacerLeft = new QSpacerItem(60, 20, QSizePolicy::Fixed,
+                                              QSizePolicy::Fixed);
+    horizLayoutLabel->addSpacerItem(spacerLeft);
+    horizLayoutLabel->addWidget(resetButton);
+
 
     // SLIDER
 
