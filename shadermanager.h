@@ -27,10 +27,11 @@ public:
     Shader *getShader(ShaderName shaderName);
     ShaderName getShaderOrderByIndex(int i) const;
     void setShaderState(ShaderName shaderName, bool state);
-
     int countActiveShaders();
     int getShaderCount();
     bool getShaderState(ShaderName shaderName) const;
+    void moveShaderUp(ShaderName shader);
+    void moveShaderDown(ShaderName shader);
 private:
     std::unordered_map<ShaderName, Shader*> shaders;
     std::vector<ShaderName> shadersOrder;

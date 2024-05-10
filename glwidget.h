@@ -25,7 +25,12 @@ public:
     void initializeUniforms();
     void changeUniformValue(int sliderValue, ShaderName shaderName,
                             const char* uniformName);
+
     void handleShaderToggled(bool state, ShaderName shaderName);
+    void handleShaderMoveUp(ShaderName shader);
+    void handleShaderMoveDown(ShaderName shader);
+    void handleShaderCopy(ShaderName shader);
+    void handleShaderRemove(ShaderName shader);
 
 signals:
     void imageSizeChanged(int width, int height);

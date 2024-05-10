@@ -11,6 +11,11 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     checkBox = new QCheckBox(this);
     toggleButton = new QToolButton(this);
     headerLine = new QFrame(this);
+    QPushButton* upButton = new QPushButton(this);
+    QPushButton* downButton = new QPushButton(this);
+    QPushButton* copyButton = new QPushButton(this);
+    // Not visible by default, appears when there's a copy
+    QPushButton* removeButton = new QPushButton(this);
     toggleAnimation = new QParallelAnimationGroup(this);
     contentArea = new QScrollArea(this);
     mainLayout = new QGridLayout(this);
@@ -27,6 +32,20 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     headerLine->setFrameShadow(QFrame::Sunken);
     headerLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
+    upButton->setText("U");
+    upButton->setFixedSize(18, 18);
+    upButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
+    downButton->setText("D");
+    downButton->setFixedSize(18, 18);
+    downButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
+    copyButton->setText("C");
+    copyButton->setFixedSize(18, 18);
+    copyButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
+    removeButton->setVisible(false);
+    removeButton->setText("R");
+    removeButton->setFixedSize(18, 18);
+    removeButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
+
     contentArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     // Start out collapsed
@@ -42,19 +61,58 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     int row = 0;
+    mainLayout->setHorizontalSpacing(3);
     mainLayout->addWidget(checkBox, 0, 0, 1, 1, Qt::AlignLeft);
     mainLayout->addWidget(toggleButton, 0, 1, 1, 1, Qt::AlignLeft);
-    mainLayout->addWidget(headerLine, row++, 2, 1, 1);
-    mainLayout->addWidget(contentArea, row, 0, 1, 3);
+    mainLayout->addWidget(headerLine, row, 2, 1, 1);
+
+    // To the right of the header line
+    mainLayout->addWidget(upButton, row, 3);
+    mainLayout->addWidget(downButton, row, 4);
+    mainLayout->addWidget(copyButton, row, 5);
+    mainLayout->addWidget(removeButton, row, 6);
+
+    mainLayout->setColumnStretch(2, 1);
+    mainLayout->setColumnStretch(3, 0);
+    mainLayout->setColumnStretch(4, 0);
+    mainLayout->setColumnStretch(5, 0);
+    mainLayout->setColumnStretch(6, 0);
+
+    mainLayout->addWidget(contentArea, ++row, 0, 1, 7); // Increment row to place content below buttons
     setLayout(mainLayout);
 
     connect(toggleButton, &QToolButton::toggled, this, &Section::toggle);
     connect(checkBox, &QCheckBox::stateChanged, this, &Section::checkBoxStateChangedSlot);
+    connect(upButton, &QPushButton::clicked, this, &Section::buttonUpPressedSlot);
+    connect(downButton, &QPushButton::clicked, this, &Section::buttonDownPressedSlot);
+    connect(copyButton, &QPushButton::clicked, this, &Section::buttonCopyPressedSlot);
+    connect(removeButton, &QPushButton::clicked, this, &Section::buttonRemovePressedSlot);
 }
+
 
 void Section::checkBoxStateChangedSlot(int state)
 {
     emit checkBoxStateChanged(state == Qt::Checked);
+}
+
+void Section::buttonUpPressedSlot(bool state)
+{
+    emit buttonUpPressed();
+}
+
+void Section::buttonDownPressedSlot(bool state)
+{
+    emit buttonDownPressed();
+}
+
+void Section::buttonCopyPressedSlot(bool state)
+{
+    emit buttonCopyPressed();
+}
+
+void Section::buttonRemovePressedSlot(bool state)
+{
+    emit buttonRemovePressed();
 }
 
 void Section::toggle(bool expanded)

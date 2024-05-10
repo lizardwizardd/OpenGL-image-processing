@@ -128,7 +128,7 @@ public:
             ":/shaders/sharpness.frag",
             ShaderName::Sharpness) {}
 
-    static constexpr ValueTuple strengthVals = {0, 100, 50, "strength", "Strength"};
+    static constexpr ValueTuple strengthVals = {0, 100, 10, "strength", "Strength"};
 
     void initializeUniforms() override
     {

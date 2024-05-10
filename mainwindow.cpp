@@ -56,10 +56,43 @@ MainWindow::MainWindow()
 
     auto connectSectionToShader = [&](Section* section, ShaderName shader)
     {
+        // Connect checkbox
         connect(section, &Section::checkBoxStateChanged, glWidget,
             [this, shader](bool state)
             {
                 glWidget->handleShaderToggled(state, shader);
+            }
+        );
+
+        // Connect up button
+        connect(section, &Section::buttonUpPressed, glWidget,
+            [this, shader]()
+            {
+                glWidget->handleShaderMoveUp(shader);
+            }
+        );
+
+        //  Connect down button
+        connect(section, &Section::buttonDownPressed, glWidget,
+            [this, shader]()
+            {
+                glWidget->handleShaderMoveDown(shader);
+            }
+        );
+
+        // Connect copy button
+        connect(section, &Section::buttonCopyPressed, glWidget,
+            [this, shader]()
+            {
+                glWidget->handleShaderCopy(shader);
+            }
+        );
+
+        // Connect remove button
+        connect(section, &Section::buttonRemovePressed, glWidget,
+            [this, shader]()
+            {
+                glWidget->handleShaderRemove(shader);
             }
         );
     };
@@ -68,13 +101,6 @@ MainWindow::MainWindow()
     // COLOR CORRECTION
     Section* sectionCorrection = new Section("Color correction", 0, mainWidget);
     connectSectionToShader(sectionCorrection, ShaderName::Correction);
-    /*
-    connect(sectionCorrection, &Section::checkBoxStateChanged, glWidget,
-            [this](bool state)
-            {
-                glWidget->handleShaderToggled(state, ShaderName::Correction);
-            });
-    */
     QVBoxLayout* correctionLayout = new QVBoxLayout();
 
     // Exposure
@@ -190,10 +216,10 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
 
     QPushButton* resetButton = new QPushButton(this);
     QFont buttonFont = resetButton->font();
-    buttonFont.setItalic(true); // Set italic style
+    buttonFont.setItalic(true);
     resetButton->setFont(buttonFont);
     resetButton->setText("reset");
-    resetButton->setFixedSize(40, 20);
+    resetButton->setFixedSize(40, 19);
     resetButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
 
     QHBoxLayout* horizLayoutLabel = new QHBoxLayout();
@@ -249,6 +275,12 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
             [this, slider](const QString &text)
             {
                 slider->setValue(text.toInt());
+            });
+
+    connect(resetButton, &QPushButton::clicked, this,
+            [this, slider, parameters]()
+            {
+                slider->setValue(std::get<2>(parameters));
             });
 
     // VBOX

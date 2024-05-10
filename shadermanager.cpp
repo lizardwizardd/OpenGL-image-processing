@@ -65,7 +65,7 @@ void ShaderManager::setShaderState(ShaderName shaderName, bool state)
             shaders.at(shaderName)->setInactive();
     } catch (...)
     {
-        qDebug() << "error throw at setShaderState";
+        qDebug() << "error thrown at setShaderState";
     }
 
 }
@@ -73,6 +73,28 @@ void ShaderManager::setShaderState(ShaderName shaderName, bool state)
 bool ShaderManager::getShaderState(ShaderName shaderName) const
 {
     return shaders.at(shaderName)->isActive();
+}
+
+void ShaderManager::moveShaderUp(ShaderName shader)
+{
+    for (int i = 2; i < shadersOrder.size(); i++)
+    {
+        if (shader == shadersOrder[i])
+        {
+            std::swap(shadersOrder[i], shadersOrder[i - 1]);
+        }
+    }
+}
+
+void ShaderManager::moveShaderDown(ShaderName shader)
+{
+    for (int i = 1; i < shadersOrder.size() - 1; i++)
+    {
+        if (shader == shadersOrder[i])
+        {
+            std::swap(shadersOrder[i], shadersOrder[i + 1]);
+        }
+    }
 }
 
 int ShaderManager::countActiveShaders()

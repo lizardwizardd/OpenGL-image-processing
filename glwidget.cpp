@@ -133,7 +133,7 @@ void GLWidget::loadTexture(const QString &filename)
     qint64 elapsedMs = timer.elapsed();
     qDebug() << "loadTexture:" << elapsedMs << "ms";
 
-    this->update(); // TODO apply filter on first load
+    this->update();
 }
 
 void GLWidget::paintGL()
@@ -415,6 +415,30 @@ void GLWidget::handleShaderToggled(bool state, ShaderName shaderName)
 
     createFramebuffers();
     update();
+}
+
+void GLWidget::handleShaderMoveUp(ShaderName shader)
+{
+    shaderManager->moveShaderUp(shader);
+    this->update();
+}
+
+void GLWidget::handleShaderMoveDown(ShaderName shader)
+{
+    shaderManager->moveShaderDown(shader);
+    this->update();
+}
+
+void GLWidget::handleShaderCopy(ShaderName shader)
+{
+    // TODO
+    this->update();
+}
+
+void GLWidget::handleShaderRemove(ShaderName shader)
+{
+    // TODO
+    this->update();
 }
 
 void GLWidget::initializeUniforms()
