@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QSlider>
 #include <QHBoxLayout>
+#include <QScrollArea>
 
 #include "glwidget.h"
 
@@ -23,7 +24,9 @@ private slots:
 private:
     GLWidget* glWidget;
     QWidget* mainWidget;
+    QScrollArea* scrollArea;
 
+    bool moveSection(QWidget* widget, bool moveUp);
     QSlider* createSlider(ShaderName shaderName,
         std::tuple<int, int, int, const char*, const char*> parameters);
     QHBoxLayout* createSliderLayout(ShaderName shaderName,

@@ -36,9 +36,10 @@ MainWindow::MainWindow()
     mainWidget = new QWidget(this);
 
     // Scroll Area
-    QScrollArea* scrollArea = new QScrollArea(this);
+    scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setWidget(mainWidget);
+    scrollArea->setVisible(false);
 
     // Main layout
     QVBoxLayout* layout = new QVBoxLayout(mainWidget);
@@ -66,17 +67,19 @@ MainWindow::MainWindow()
 
         // Connect up button
         connect(section, &Section::buttonUpPressed, glWidget,
-            [this, shader]()
+            [this, shader, section]()
             {
-                glWidget->handleShaderMoveUp(shader);
+                if (moveSection(section, true))
+                    glWidget->handleShaderMoveUp(shader);
             }
         );
 
         //  Connect down button
         connect(section, &Section::buttonDownPressed, glWidget,
-            [this, shader]()
+            [this, shader, section]()
             {
-                glWidget->handleShaderMoveDown(shader);
+                if (moveSection(section, false))
+                    glWidget->handleShaderMoveDown(shader);
             }
         );
 
@@ -178,7 +181,7 @@ void MainWindow::chooseFile()
                        defaultImgDir, "Images (*.png *.jpg *.bmp)");
 
     if (!fileName.isEmpty())
-        this->glWidget->loadTexture(fileName);
+        scrollArea->setVisible(this->glWidget->loadTexture(fileName));
     else
         qDebug() << "Can't load file: fileName is empty";
 }
@@ -194,6 +197,24 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (glWidget)
         glWidget->close();
     event->accept();
+}
+
+bool MainWindow::moveSection(QWidget* widget, bool moveUp)
+{
+    QVBoxLayout* parentLayout =
+        qobject_cast<QVBoxLayout*>(widget->parentWidget()->layout());
+    const int index = parentLayout->indexOf(widget);
+
+    if (moveUp && index == 0)
+        return false;
+    if (!moveUp && index == parentLayout->count() - 1)
+        return false;
+
+    const int newIndex = moveUp ? index - 1 : index + 1;
+    parentLayout->removeWidget(widget);
+    parentLayout->insertWidget(newIndex , widget);
+
+    return true;
 }
 
 QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,

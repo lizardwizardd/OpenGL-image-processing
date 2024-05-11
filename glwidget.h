@@ -21,7 +21,7 @@ public:
     using QOpenGLWindow::QOpenGLWindow;
     ~GLWidget();
 
-    void loadTexture(const QString &filename);
+    bool loadTexture(const QString &filename);
     void initializeUniforms();
     void changeUniformValue(int sliderValue, ShaderName shaderName,
                             const char* uniformName);

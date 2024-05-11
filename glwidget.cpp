@@ -42,6 +42,10 @@ void GLWidget::initializeGL()
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
+    currentShader = new CorrectionShader();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
     currentShader = new SharpnessShader();
     shaderManager->addShader(currentShader);
     currentShader->compile();
@@ -50,22 +54,19 @@ void GLWidget::initializeGL()
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
-    currentShader = new CorrectionShader();
-    shaderManager->addShader(currentShader);
-    currentShader->compile();
 
-    // Initialize GlWidget
     initializeBuffers();
     initializeUniforms();
 }
 
-void GLWidget::loadTexture(const QString &filename)
+bool GLWidget::loadTexture(const QString &filename)
 {
     QElapsedTimer timer;
     timer.start();
 
     this->show();
 
+    bool textureLoaded = false;
     QImage originalImage(filename);
     QSize imageSize = originalImage.size();
 
@@ -93,13 +94,14 @@ void GLWidget::loadTexture(const QString &filename)
         if (this->texture) // replacing an existing texture
             needToDeallocate = true;
         textureUpdated = true;
+        textureLoaded = true;
     }
     else // load failed, go back
     {
         qDebug() << "Texture loading failed";
         delete newTexture;
-        if (!texture) // if texture didn't exist (first load)
-            this->hide();
+        if (texture) // if texture existed (not first load)
+            textureLoaded = true;
     }
 
     if (needToDeallocate)
@@ -132,8 +134,9 @@ void GLWidget::loadTexture(const QString &filename)
 
     qint64 elapsedMs = timer.elapsed();
     qDebug() << "loadTexture:" << elapsedMs << "ms";
-
     this->update();
+
+    return textureLoaded;
 }
 
 void GLWidget::paintGL()
@@ -420,12 +423,14 @@ void GLWidget::handleShaderToggled(bool state, ShaderName shaderName)
 void GLWidget::handleShaderMoveUp(ShaderName shader)
 {
     shaderManager->moveShaderUp(shader);
+    createFramebuffers();
     this->update();
 }
 
 void GLWidget::handleShaderMoveDown(ShaderName shader)
 {
     shaderManager->moveShaderDown(shader);
+    createFramebuffers();
     this->update();
 }
 
