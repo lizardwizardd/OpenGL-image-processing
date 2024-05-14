@@ -30,8 +30,10 @@ set(PROJECT_SOURCES
         shaders/correction.vert
         shaders/sharpness.vert
         shaders/sharpness.frag
-        shaders/pixelate.frag
-        shaders/pixelate.vert
+        shaders/posterize.frag
+        shaders/posterize.vert
+        shaders/invert.frag
+        shaders/invert.vert
 
         resources.qrc
 )

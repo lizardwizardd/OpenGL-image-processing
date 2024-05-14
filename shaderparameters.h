@@ -9,7 +9,8 @@ enum class ShaderName
     Base,
     Correction,
     Sharpness,
-    Pixelate,
+    Posterize,
+    Invert,
     Count
 };
 
@@ -138,19 +139,36 @@ public:
 };
 
 // PIXELATION SHADER
-class PixelateShader : public Shader
+class PosterizeShader : public Shader
 {
 public:
-    PixelateShader() : Shader(
-            ":/shaders/pixelate.vert",
-            ":/shaders/pixelate.frag",
-            ShaderName::Pixelate) {}
+    PosterizeShader() : Shader(
+            ":/shaders/posterize.vert",
+            ":/shaders/posterize.frag",
+            ShaderName::Posterize) {}
 
-    static constexpr ValueTuple pixeSizeVals = {100, 50000, 100, "pixelSize", "Pixel Size"};
+    static constexpr ValueTuple colorsVals = {2, 100, 30, "numColors", "Posterize levels"};
+    static constexpr ValueTuple gammaVals = {0, 200, 100, "gamma", "Gamma"};
 
     void initializeUniforms() override
     {
-        setUniformValue(std::get<3>(pixeSizeVals),
-                        std::get<2>(pixeSizeVals) / 100.0f);
+        setUniformValue(std::get<3>(colorsVals),
+                        std::get<2>(colorsVals) / 100.0f);
+        setUniformValue(std::get<3>(gammaVals),
+                        std::get<2>(gammaVals) / 100.0f);
+    }
+};
+
+// COLOR REDUCTION SHADER
+class InvertShader : public Shader
+{
+public:
+    InvertShader() : Shader(
+            ":/shaders/invert.vert",
+            ":/shaders/invert.frag",
+            ShaderName::Invert) {}
+
+    void initializeUniforms() override
+    {
     }
 };

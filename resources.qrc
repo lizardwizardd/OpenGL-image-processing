@@ -4,9 +4,11 @@
         <file>shaders/base.vert</file>
         <file>shaders/correction.frag</file>
         <file>shaders/correction.vert</file>
-        <file>shaders/pixelate.frag</file>
-        <file>shaders/pixelate.vert</file>
+        <file>shaders/posterize.frag</file>
+        <file>shaders/posterize.vert</file>
         <file>shaders/sharpness.frag</file>
         <file>shaders/sharpness.vert</file>
+        <file>shaders/invert.vert</file>
+        <file>shaders/invert.frag</file>
     </qresource>
 </RCC>

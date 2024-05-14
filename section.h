@@ -49,6 +49,7 @@ public:
 
     void setContentLayout(QLayout& contentLayout);
     void setTitle(QString title);
+    void setNotExpandable();
     void updateHeights();
 };
 

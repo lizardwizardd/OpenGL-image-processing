@@ -144,6 +144,12 @@ void Section::setTitle(QString title)
     toggleButton->setText(std::move(title));
 }
 
+void Section::setNotExpandable()
+{
+    toggleButton->setEnabled(false);
+    toggleButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+}
+
 void Section::updateHeights()
 {
     int contentHeight = contentArea->layout()->sizeHint().height();

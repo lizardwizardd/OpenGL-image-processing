@@ -112,23 +112,18 @@ MainWindow::MainWindow()
     // Contrast
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::contrastVals));
-
     // Temperature
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::temperatureVals));
-
     // Saturation
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::saturationVals));
-
     // Brightness
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::brightnessVals));
-
     // Color tint
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::tintIntensity));
-
     // Color filter
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::filterIntensity));
@@ -150,17 +145,30 @@ MainWindow::MainWindow()
     layout->addWidget(sectionSharpness);
 
 
-    // PIXELATE
-    Section* sectionPixelate = new Section("Pixelate", 0, mainWidget);
-    connectSectionToShader(sectionPixelate, ShaderName::Pixelate);
+    // POSTERIZE
+    Section* sectionPixelate = new Section("Posterize", 0, mainWidget);
+    connectSectionToShader(sectionPixelate, ShaderName::Posterize);
     QVBoxLayout* pixelateLayout = new QVBoxLayout();
 
-    // Pixel size
-    pixelateLayout->addLayout(createLabelSlider(ShaderName::Pixelate,
-                                                PixelateShader::pixeSizeVals));
+    // Color levels
+    pixelateLayout->addLayout(createLabelSlider(ShaderName::Posterize,
+                                                PosterizeShader::colorsVals));
+    // Gamma
+    pixelateLayout->addLayout(createLabelSlider(ShaderName::Posterize,
+                                                PosterizeShader::gammaVals));
 
     sectionPixelate->setContentLayout(*pixelateLayout);
     layout->addWidget(sectionPixelate);
+
+
+    // INVERT
+    Section* sectionInvert = new Section("Invert", 0, mainWidget);
+    sectionInvert->setNotExpandable();
+    connectSectionToShader(sectionInvert, ShaderName::Invert);
+    QVBoxLayout* invertLayout = new QVBoxLayout();
+
+    sectionInvert->setContentLayout(*invertLayout);
+    layout->addWidget(sectionInvert);
 
 
     // Set scroll area as central widget

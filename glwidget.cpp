@@ -50,7 +50,11 @@ void GLWidget::initializeGL()
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
-    currentShader = new PixelateShader();
+    currentShader = new PosterizeShader();
+    shaderManager->addShader(currentShader);
+    currentShader->compile();
+
+    currentShader = new InvertShader();
     shaderManager->addShader(currentShader);
     currentShader->compile();
 
@@ -84,8 +88,8 @@ bool GLWidget::loadTexture(const QString &filename)
     }
 
     QOpenGLTexture* newTexture = new QOpenGLTexture(originalImage.mirrored());
-    newTexture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
-    newTexture->setMagnificationFilter(QOpenGLTexture::Linear);
+    newTexture->setMinificationFilter(QOpenGLTexture::NearestMipMapNearest);
+    newTexture->setMagnificationFilter(QOpenGLTexture::Nearest);
 
     bool needToDeallocate = false;
     bool textureUpdated = false;
