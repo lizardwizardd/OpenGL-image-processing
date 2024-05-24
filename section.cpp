@@ -41,10 +41,11 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     downButton->setToolTip("Move down in order");
     downButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
     copyButton->setText("C");
+    copyButton->setVisible(false); // todo
     copyButton->setFixedSize(18, 18);
     copyButton->setToolTip("Copy");
     copyButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
-    removeButton->setVisible(false);
+    removeButton->setVisible(false); // todo
     removeButton->setText("R");
     removeButton->setFixedSize(18, 18);
     removeButton->setToolTip("Remove");

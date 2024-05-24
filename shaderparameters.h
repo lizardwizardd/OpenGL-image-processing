@@ -148,7 +148,7 @@ public:
             ShaderName::Posterize) {}
 
     static constexpr ValueTuple colorsVals = {2, 100, 30, "numColors", "Posterize levels"};
-    static constexpr ValueTuple gammaVals = {0, 200, 100, "gamma", "Gamma"};
+    static constexpr ValueTuple gammaVals = {1, 200, 100, "gamma", "Gamma"};
 
     void initializeUniforms() override
     {
