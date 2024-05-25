@@ -34,6 +34,7 @@ private:
     QHBoxLayout* createLabelLayout(ShaderName shaderName,
                                    std::tuple<int, int, int, const char*, const char*> parameters);
     QVBoxLayout *createLabelSlider(ShaderName shaderName, std::tuple<int, int, int, const char *, const char *> parameters);
+    QVBoxLayout *createLabelColorSelect(ShaderName shaderName, std::tuple<int, int, int, const char *, const char *> parameters);
 };
 
 #endif // MAINWINDOW_H

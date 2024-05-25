@@ -407,7 +407,19 @@ void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
     }
     useShader(shaderName);
     shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
-    qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
+    //qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
+    this->update();
+}
+
+void GLWidget::changeUniformValue(const QVector3D color, ShaderName shaderName,
+                                  const char* uniformName)
+{
+    if (!shaderManager)
+    {
+        return; // allowing to change shader parameters before file was opened
+    }
+    useShader(shaderName);
+    shaderManager->setVec3(shaderName, uniformName, color);
     this->update();
 }
 

@@ -73,8 +73,8 @@ vec3 adjustTint(vec3 color, vec3 tintColor, float tintIntensity)
 void main()
 {
     vec3 col = texture2D(screenTexture, TexCoords).rgb;
-    col = mix(col, col * vec3(0.9f, 0.0f, 0.0f), filterIntensity);
-    col = adjustTint(col, vec3(0.9f, 0.0f, 0.0f), tintIntensity);
+    col = mix(col, col * filterColor, filterIntensity);
+    col = adjustTint(col, tintColor, tintIntensity);
     col = adjustTemperature(col, temperature);
     col = adjustExposure(col, exposure);
     col = adjustContrast(col, contrast);

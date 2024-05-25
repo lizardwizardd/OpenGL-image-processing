@@ -32,6 +32,7 @@ public:
     void handleShaderCopy(ShaderName shader);
     void handleShaderRemove(ShaderName shader);
 
+    void changeUniformValue(const QVector3D color, ShaderName shaderName, const char *uniformName);
 signals:
     void imageSizeChanged(int width, int height);
 

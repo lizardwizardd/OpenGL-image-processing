@@ -21,7 +21,8 @@ public:
                             GLenum type, int offset, int tupleSize, int stride);
 
     void setInt(ShaderName shader, const char* name, const int value);
-    void setFloat(ShaderName shader, const char *name, const float value);
+    void setFloat(ShaderName shader, const char* name, const float value);
+    void setVec3(ShaderName shader, const char* name, const QVector3D& value);
 
     void addShader(Shader* shader);
     Shader *getShader(ShaderName shaderName);

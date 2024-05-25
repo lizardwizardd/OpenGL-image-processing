@@ -123,6 +123,11 @@ void ShaderManager::setFloat(ShaderName shader, const char *name, const float va
     shaders.at(shader)->setUniformValue(name, value);
 }
 
+void ShaderManager::setVec3(ShaderName shader, const char *name, const QVector3D& value)
+{
+    shaders.at(shader)->setUniformValue(name, value);
+}
+
 void ShaderManager::addShader(Shader *shader)
 {
     shaders.insert(std::make_pair(shader->getName(), shader));

@@ -14,6 +14,9 @@
 #include <QSlider>
 #include <QLineEdit>
 #include <QIntValidator>
+#include <QColorDialog>
+#include <QColor>
+#include <memory>
 
 
 MainWindow::MainWindow()
@@ -122,9 +125,13 @@ MainWindow::MainWindow()
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::brightnessVals));
     // Color tint
+    correctionLayout->addLayout(createLabelColorSelect(ShaderName::Correction,
+                                                       CorrectionShader::tintColor));
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::tintIntensity));
     // Color filter
+    correctionLayout->addLayout(createLabelColorSelect(ShaderName::Correction,
+                                                       CorrectionShader::filterColor));
     correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
                                                   CorrectionShader::filterIntensity));
 
@@ -225,6 +232,57 @@ bool MainWindow::moveSection(QWidget* widget, bool moveUp)
     return true;
 }
 
+QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
+    std::tuple<int, int, int, const char*, const char*> parameters)
+{
+    // LABEL
+    QLabel* label = new QLabel(std::get<4>(parameters));
+    label->setFixedWidth(100);
+
+    QHBoxLayout* horizLayoutLabel = new QHBoxLayout();
+    horizLayoutLabel->setAlignment(Qt::AlignLeft);
+    horizLayoutLabel->addWidget(label);
+    horizLayoutLabel->addStretch();
+    QSpacerItem* spacerLeft = new QSpacerItem(60, 20, QSizePolicy::Fixed,
+                                              QSizePolicy::Fixed);
+    horizLayoutLabel->addSpacerItem(spacerLeft);
+
+    // COLOR SELECTION
+
+    QHBoxLayout* horizLayoutColorPicker = new QHBoxLayout(this);
+    QPushButton* selectColorButton = new QPushButton("Pick Color", this);
+    horizLayoutColorPicker->addWidget(selectColorButton);
+
+    // Color display box
+    QLabel* colorDisplayLabel = new QLabel(this);
+    colorDisplayLabel->setFixedSize(20, 20);
+    colorDisplayLabel->setStyleSheet("background-color: rgb(255, 255, 255); border: 1px solid black;");
+    horizLayoutColorPicker->addWidget(colorDisplayLabel);
+
+    auto vbox = new QVBoxLayout(this);
+    vbox->addLayout(horizLayoutLabel);
+    vbox->addLayout(horizLayoutColorPicker);
+
+    auto color = std::make_shared<QColor>(255, 255, 255);
+
+    connect(selectColorButton, &QPushButton::clicked, this, [this, colorDisplayLabel, color, shaderName, uniformName = std::get<3>(parameters)]() {
+        QColor selectedColor = QColorDialog::getColor(*color, this, "Select Color");
+        if (selectedColor.isValid()) {
+            *color = selectedColor;
+            colorDisplayLabel->setStyleSheet(
+                QString("background-color: %1; border: 1px solid black;").arg(color->name())
+                );
+
+            // Update the shader with the new color
+            QVector3D colorVec(color->redF(), color->greenF(), color->blueF());
+            this->glWidget->changeUniformValue(colorVec, shaderName, uniformName);
+        }
+    });
+
+    return vbox;
+}
+
+
 QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
     std::tuple<int, int, int, const char*, const char*> parameters)
 {
@@ -238,7 +296,7 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
     lineEdit->setValidator(new QIntValidator(
         std::get<0>(parameters),
         std::get<1>(parameters))
-                           );
+    );
 
     QLabel* label = new QLabel(std::get<4>(parameters));
     label->setFixedWidth(100);
@@ -314,7 +372,7 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
 
     // VBOX
 
-    auto vbox = new QVBoxLayout();
+    auto vbox = new QVBoxLayout(this);
     vbox->addLayout(horizLayoutLabel);
     vbox->addLayout(horizLayoutSlider);
 
