@@ -82,6 +82,7 @@ void ShaderManager::moveShaderUp(ShaderName shader)
         if (shader == shadersOrder[i])
         {
             std::swap(shadersOrder[i], shadersOrder[i - 1]);
+            break;
         }
     }
 }
@@ -93,6 +94,7 @@ void ShaderManager::moveShaderDown(ShaderName shader)
         if (shader == shadersOrder[i])
         {
             std::swap(shadersOrder[i], shadersOrder[i + 1]);
+            break;
         }
     }
 }

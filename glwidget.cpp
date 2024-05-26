@@ -128,12 +128,12 @@ bool GLWidget::loadTexture(const QString &filename)
         shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureHeight", texture->height());
 
         // Handle size change
-        int windowW = texture->width();
-        int windowH = texture->height();
+        int windowW = newTexture->width();
+        int windowH = newTexture->height();
 
-        this->textureAspectRatio = (float)texture->width() / texture->height();
+        this->setMinimumSize(QSize(windowW, windowH));
         this->resize(windowW, windowH);
-        this->setMinimumSize(QSize(texture->width(), texture->height()));
+        this->textureAspectRatio = (float)windowW / windowH;
     }
 
     qint64 elapsedMs = timer.elapsed();
