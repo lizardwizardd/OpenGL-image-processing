@@ -1,8 +1,8 @@
-
 #pragma once
 
 #include <QOpenGLShaderProgram>
 #include <QApplication>
+#include <vector>
 
 enum class ShaderName
 {
@@ -14,11 +14,19 @@ enum class ShaderName
     Count
 };
 
+enum class ParameterType
+{
+    SLIDER = 1,
+    COLORPICKER = 2
+};
+
 class Shader : public QOpenGLShaderProgram
 {
+public:
+    // min, max, default, uniform name, display name, parameter type
+    using ValueTuple = std::tuple<int, int, int, const char*, const char*, ParameterType>;
+
 protected:
-    // min, max, default, uniform name, display name
-    using ValueTuple = std::tuple<int, int, int, const char*, const char*>;
 
     QString vertexShaderPath;
     QString fragmentShaderPath;
@@ -48,21 +56,40 @@ public:
         return true;
     }
 
-    virtual void initializeUniforms() = 0;
+    virtual void initializeUniforms()
+    {
+        for (const auto& param : getParameters())
+        {
+            int defaultValue = std::get<2>(param);
+            const char* uniformName = std::get<3>(param);
+            ParameterType paramType = std::get<5>(param);
+
+            if (paramType == ParameterType::SLIDER)
+            {
+                setUniformValue(uniformName, defaultValue / 100.0f);
+            }
+            else if (paramType == ParameterType::COLORPICKER)
+            {
+                // Assuming default color is white (1.0, 1.0, 1.0)
+                setUniformValue(uniformName, 1.0f, 1.0f, 1.0f);
+            }
+        }
+    }
+
+    virtual std::vector<ValueTuple> getParameters() const = 0;
 
     ShaderName getName() const
-        { return name; }
+    { return name; }
 
-    bool isActive()
-        { return state; }
+    bool isActive() const
+    { return state; }
 
     void setActive()
-        { state = true; }
+    { state = true; }
 
     void setInactive()
-        { state = false; }
+    { state = false; }
 };
-
 
 // BASE SHADER
 class BaseShader : public Shader
@@ -73,7 +100,10 @@ public:
             ":/shaders/base.frag",
             ShaderName::Base) {}
 
-    void initializeUniforms() override {}
+    std::vector<ValueTuple> getParameters() const override
+    {
+        return {};
+    }
 };
 
 
@@ -86,42 +116,19 @@ public:
             ":/shaders/correction.frag",
             ShaderName::Correction) {}
 
-    static constexpr ValueTuple exposureVals    = {-200, 200, 0, "exposure", "Exposure"};
-    static constexpr ValueTuple contrastVals    = {0,    200, 100, "contrast", "Contrast"};
-    static constexpr ValueTuple temperatureVals = {-100, 100, 0, "temperature", "Temperature"};
-    static constexpr ValueTuple saturationVals  = {0,    200, 100, "saturation", "Saturation"};
-    static constexpr ValueTuple brightnessVals  = {-100, 100, 0, "brightness", "Brightness"};
-    static constexpr ValueTuple tintColor       = {0,    0,   0, "tintColor", "Tint color"};
-    static constexpr ValueTuple tintIntensity   = {0,    100, 0, "tintIntensity", "Tint intensity"};
-    static constexpr ValueTuple filterColor     = {0,    0,   0, "filterColor", "Filter color"};
-    static constexpr ValueTuple filterIntensity = {0,    100, 0, "filterIntensity", "Filter intensity"};
-
-    void initializeUniforms() override
+    std::vector<ValueTuple> getParameters() const override
     {
-        setUniformValue(std::get<3>(exposureVals),
-                        std::get<2>(exposureVals) / 100.0f);
-
-        setUniformValue(std::get<3>(contrastVals),
-                        std::get<2>(contrastVals) / 100.0f);
-
-        setUniformValue(std::get<3>(temperatureVals),
-                        std::get<2>(temperatureVals) / 100.0f);
-
-        setUniformValue(std::get<3>(saturationVals),
-                        std::get<2>(saturationVals) / 100.0f);
-
-        setUniformValue(std::get<3>(brightnessVals),
-                        std::get<2>(brightnessVals) / 100.0f);
-
-        setUniformValue(std::get<3>(tintColor), 1.0f, 1.0f, 1.0f);
-
-        setUniformValue(std::get<3>(tintIntensity),
-                        std::get<2>(tintIntensity) / 100.0f);
-
-        setUniformValue(std::get<3>(filterColor), 1.0f, 1.0f, 1.0f);
-
-        setUniformValue(std::get<3>(filterIntensity),
-                        std::get<2>(filterIntensity) / 100.0f);
+        return {
+            {-200, 200, 0, "exposure", "Exposure", ParameterType::SLIDER},
+            {0,    200, 100, "contrast", "Contrast", ParameterType::SLIDER},
+            {-100, 100, 0, "temperature", "Temperature", ParameterType::SLIDER},
+            {0,    200, 100, "saturation", "Saturation", ParameterType::SLIDER},
+            {-100, 100, 0, "brightness", "Brightness", ParameterType::SLIDER},
+            {0,    0,   0, "tintColor", "Tint color", ParameterType::COLORPICKER},
+            {0,    100, 0, "tintIntensity", "Tint intensity", ParameterType::SLIDER},
+            {0,    0,   0, "filterColor", "Filter color", ParameterType::COLORPICKER},
+            {0,    100, 0, "filterIntensity", "Filter intensity", ParameterType::SLIDER}
+        };
     }
 };
 
@@ -135,12 +142,11 @@ public:
             ":/shaders/sharpness.frag",
             ShaderName::Sharpness) {}
 
-    static constexpr ValueTuple strengthVals = {0, 100, 10, "strength", "Strength"};
-
-    void initializeUniforms() override
+    std::vector<ValueTuple> getParameters() const override
     {
-        setUniformValue(std::get<3>(strengthVals),
-                        std::get<2>(strengthVals) / 100.0f);
+        return {
+            {0, 100, 10, "strength", "Strength", ParameterType::SLIDER}
+        };
     }
 };
 
@@ -153,15 +159,12 @@ public:
             ":/shaders/posterize.frag",
             ShaderName::Posterize) {}
 
-    static constexpr ValueTuple colorsVals = {2, 100, 30, "numColors", "Posterize levels"};
-    static constexpr ValueTuple gammaVals = {1, 200, 100, "gamma", "Gamma"};
-
-    void initializeUniforms() override
+    std::vector<ValueTuple> getParameters() const override
     {
-        setUniformValue(std::get<3>(colorsVals),
-                        std::get<2>(colorsVals) / 100.0f);
-        setUniformValue(std::get<3>(gammaVals),
-                        std::get<2>(gammaVals) / 100.0f);
+        return {
+            {2, 100, 30, "numColors", "Posterize levels", ParameterType::SLIDER},
+            {1, 200, 100, "gamma", "Gamma", ParameterType::SLIDER}
+        };
     }
 };
 
@@ -174,7 +177,8 @@ public:
             ":/shaders/invert.frag",
             ShaderName::Invert) {}
 
-    void initializeUniforms() override
+    std::vector<ValueTuple> getParameters() const override
     {
+        return {};
     }
 };

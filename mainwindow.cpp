@@ -1,6 +1,7 @@
 
 #include "mainwindow.h"
 #include "section.h"
+#include "shaderparameters.h"
 
 #include <QMenuBar>
 #include <QMenu>
@@ -103,79 +104,24 @@ MainWindow::MainWindow()
         );
     };
 
+    auto createShaderSection = [&](std::unique_ptr<Shader> shader, const QString& title)
+    {
+        Section* section = new Section(title, 0, mainWidget);
+        connectSectionToShader(section, shader->getName());
+        QVBoxLayout* shaderLayout = createShaderParameters(shader->getName(), shader->getParameters());
+        section->setContentLayout(*shaderLayout);
+        layout->addWidget(section);
 
-    // COLOR CORRECTION
-    Section* sectionCorrection = new Section("Color correction", 0, mainWidget);
-    connectSectionToShader(sectionCorrection, ShaderName::Correction);
-    QVBoxLayout* correctionLayout = new QVBoxLayout();
-
-    // Exposure
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::exposureVals));
-    // Contrast
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::contrastVals));
-    // Temperature
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::temperatureVals));
-    // Saturation
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::saturationVals));
-    // Brightness
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::brightnessVals));
-    // Color tint
-    correctionLayout->addLayout(createLabelColorSelect(ShaderName::Correction,
-                                                       CorrectionShader::tintColor));
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::tintIntensity));
-    // Color filter
-    correctionLayout->addLayout(createLabelColorSelect(ShaderName::Correction,
-                                                       CorrectionShader::filterColor));
-    correctionLayout->addLayout(createLabelSlider(ShaderName::Correction,
-                                                  CorrectionShader::filterIntensity));
-
-    sectionCorrection->setContentLayout(*correctionLayout);
-    layout->addWidget(sectionCorrection);
+        return section;
+    };
 
 
-    // SHARPNESS
-    Section* sectionSharpness = new Section("Sharpness", 0, mainWidget);
-    connectSectionToShader(sectionSharpness, ShaderName::Sharpness);
-    QVBoxLayout* sharpnessLayout = new QVBoxLayout();
-
-    // Strength
-    sharpnessLayout->addLayout(createLabelSlider(ShaderName::Sharpness,
-                                                  SharpnessShader::strengthVals));
-
-    sectionSharpness->setContentLayout(*sharpnessLayout);
-    layout->addWidget(sectionSharpness);
-
-
-    // POSTERIZE
-    Section* sectionPixelate = new Section("Posterize", 0, mainWidget);
-    connectSectionToShader(sectionPixelate, ShaderName::Posterize);
-    QVBoxLayout* pixelateLayout = new QVBoxLayout();
-
-    // Color levels
-    pixelateLayout->addLayout(createLabelSlider(ShaderName::Posterize,
-                                                PosterizeShader::colorsVals));
-    // Gamma
-    pixelateLayout->addLayout(createLabelSlider(ShaderName::Posterize,
-                                                PosterizeShader::gammaVals));
-
-    sectionPixelate->setContentLayout(*pixelateLayout);
-    layout->addWidget(sectionPixelate);
-
-
-    // INVERT
-    Section* sectionInvert = new Section("Invert", 0, mainWidget);
-    sectionInvert->setNotExpandable();
-    connectSectionToShader(sectionInvert, ShaderName::Invert);
-    QVBoxLayout* invertLayout = new QVBoxLayout();
-
-    sectionInvert->setContentLayout(*invertLayout);
-    layout->addWidget(sectionInvert);
+    // SHADERS
+    createShaderSection(std::make_unique<CorrectionShader>(), "Color correction");
+    createShaderSection(std::make_unique<SharpnessShader>(), "Sharpness");
+    createShaderSection(std::make_unique<PosterizeShader>(), "Posterization");
+    Section* invertSection = createShaderSection(std::make_unique<InvertShader>(), "Invert colors");
+    invertSection->setNotExpandable(); // no parameters
 
 
     // Set scroll area as central widget
@@ -232,8 +178,29 @@ bool MainWindow::moveSection(QWidget* widget, bool moveUp)
     return true;
 }
 
+QVBoxLayout* MainWindow::createShaderParameters(ShaderName shaderName,
+    const std::vector<Shader::ValueTuple>& parameters)
+{
+    QVBoxLayout* parametersLayout = new QVBoxLayout(this);
+
+    for (const auto& valueTuple : parameters)
+    {
+        switch(std::get<5>(valueTuple))
+        {
+        case (ParameterType::SLIDER):
+            parametersLayout->addLayout(createLabelSlider(shaderName, valueTuple));
+            break;
+        case (ParameterType::COLORPICKER):
+            parametersLayout->addLayout(createLabelColorSelect(shaderName, valueTuple));
+            break;
+        }
+    }
+
+    return parametersLayout;
+}
+
 QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
-    std::tuple<int, int, int, const char*, const char*> parameters)
+    const Shader::ValueTuple& parameters)
 {
     // LABEL
     QLabel* label = new QLabel(std::get<4>(parameters));
@@ -284,7 +251,7 @@ QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
 
 
 QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
-    std::tuple<int, int, int, const char*, const char*> parameters)
+    const Shader::ValueTuple& parameters)
 {
     // LABEL
 
@@ -380,7 +347,7 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
 }
 
 QHBoxLayout* MainWindow::createLabelLayout(ShaderName shaderName,
-               std::tuple<int, int, int, const char*, const char*> parameters)
+               const Shader::ValueTuple& parameters)
 {
     QLineEdit* lineEdit = new QLineEdit(QString::number(std::get<2>(parameters)));
     lineEdit->setStyleSheet("QLineEdit {background: rgb(240, 240, 240);}");
@@ -405,7 +372,7 @@ QHBoxLayout* MainWindow::createLabelLayout(ShaderName shaderName,
 }
 
 QHBoxLayout* MainWindow::createSliderLayout(ShaderName shaderName,
-                std::tuple<int, int, int, const char*, const char*> parameters)
+                const Shader::ValueTuple& parameters)
 {
     QSlider* slider = new QSlider(Qt::Orientation::Horizontal);
     slider->setMinimum(std::get<0>(parameters));
@@ -439,7 +406,7 @@ QHBoxLayout* MainWindow::createSliderLayout(ShaderName shaderName,
 
 
 QSlider* MainWindow::createSlider(ShaderName shaderName,
-      std::tuple<int, int, int, const char*, const char*> parameters)
+      const Shader::ValueTuple& parameters)
 {
     QSlider* slider = new QSlider(Qt::Orientation::Horizontal, this);
     slider->setMinimum(std::get<0>(parameters));

@@ -34,6 +34,13 @@ void GLWidget::initializeGL()
     // Initialize shaderManager and its containers
     shaderManager = new ShaderManager();
 
+    initializeShaders();
+    initializeBuffers();
+    initializeUniforms();
+}
+
+void GLWidget::initializeShaders()
+{
     Shader* currentShader;
 
     // Shaders are initialized inactive (except the base shader)
@@ -57,10 +64,6 @@ void GLWidget::initializeGL()
     currentShader = new InvertShader();
     shaderManager->addShader(currentShader);
     currentShader->compile();
-
-
-    initializeBuffers();
-    initializeUniforms();
 }
 
 bool GLWidget::loadTexture(const QString &filename)

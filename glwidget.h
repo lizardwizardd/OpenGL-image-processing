@@ -62,6 +62,7 @@ private:
     void closeEvent(QCloseEvent *event) override;
     void useShader(ShaderName shaderName);
     void createFramebuffers();
+    void initializeShaders();
 };
 
 #endif // GLWIDGET_H
