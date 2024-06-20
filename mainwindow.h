@@ -27,12 +27,9 @@ private:
     QScrollArea* scrollArea;
 
     bool moveSection(QWidget* widget, bool moveUp);
-    QSlider* createSlider(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QHBoxLayout* createSliderLayout(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QHBoxLayout* createLabelLayout(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QVBoxLayout *createLabelSlider(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QVBoxLayout *createLabelColorSelect(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QVBoxLayout *createShaderParameters(ShaderName shaderName, const std::vector<Shader::ValueTuple> &parameters);
+    QVBoxLayout* createLabelSlider(ShaderName shaderName, const Shader::ValueTuple& parameters);
+    QVBoxLayout* createLabelColorSelect(ShaderName shaderName, const Shader::ValueTuple& parameters);
+    QVBoxLayout* createShaderParameters(ShaderName shaderName, const std::vector<Shader::ValueTuple> &parameters);
 };
 
 #endif // MAINWINDOW_H
