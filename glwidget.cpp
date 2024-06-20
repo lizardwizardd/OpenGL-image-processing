@@ -37,6 +37,8 @@ void GLWidget::initializeGL()
     initializeShaders();
     initializeBuffers();
     initializeUniforms();
+
+    emit glInitialized();
 }
 
 void GLWidget::initializeShaders()
@@ -463,6 +465,16 @@ void GLWidget::handleShaderRemove(ShaderName shader)
 {
     // TODO
     this->update();
+}
+
+const std::vector<ShaderName> &GLWidget::getCurrentShaderOrder()
+{
+    return shaderManager->getCurrentOrder();
+}
+
+const Shader *GLWidget::getShaderByName(ShaderName shaderName)
+{
+    return shaderManager->getShader(shaderName);
 }
 
 void GLWidget::initializeUniforms()

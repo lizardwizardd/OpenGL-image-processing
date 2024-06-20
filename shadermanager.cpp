@@ -99,6 +99,11 @@ void ShaderManager::moveShaderDown(ShaderName shader)
     }
 }
 
+const std::vector<ShaderName>& ShaderManager::getCurrentOrder()
+{
+    return shadersOrder;
+}
+
 int ShaderManager::countActiveShaders()
 {
     int count = 0;

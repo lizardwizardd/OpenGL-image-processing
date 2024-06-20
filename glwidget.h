@@ -25,6 +25,8 @@ public:
     void initializeUniforms();
     void changeUniformValue(int sliderValue, ShaderName shaderName,
                             const char* uniformName);
+    void changeUniformValue(const QVector3D color, ShaderName shaderName,
+                            const char *uniformName);
 
     void handleShaderToggled(bool state, ShaderName shaderName);
     void handleShaderMoveUp(ShaderName shader);
@@ -32,9 +34,12 @@ public:
     void handleShaderCopy(ShaderName shader);
     void handleShaderRemove(ShaderName shader);
 
-    void changeUniformValue(const QVector3D color, ShaderName shaderName, const char *uniformName);
+    const std::vector<ShaderName>& getCurrentShaderOrder();
+    const Shader* getShaderByName(ShaderName shaderName);
+
 signals:
     void imageSizeChanged(int width, int height);
+    void glInitialized();
 
 protected:
     void initializeGL() override;

@@ -33,7 +33,6 @@ MainWindow::MainWindow()
     QAction* openFile = new QAction(menuList);
     openFile->setText("Open file");
     menuList->addAction(openFile);
-    connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     setMenuBar(menuBar);
 
     // Main widget
@@ -44,93 +43,96 @@ MainWindow::MainWindow()
     scrollArea->setWidgetResizable(true);
     scrollArea->setWidget(mainWidget);
     scrollArea->setVisible(false);
+    this->setCentralWidget(scrollArea);
 
     // Main layout
-    QVBoxLayout* layout = new QVBoxLayout(mainWidget);
-    layout->setAlignment(Qt::AlignTop);
+    mainLayout = new QVBoxLayout(mainWidget);
+    mainLayout->setAlignment(Qt::AlignTop);
 
     // GLWidget setup
     glWidget = new GLWidget(this);
     glWidget->setMinimumSize(QSize(300, 300));
+
+
+    connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
     connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
+    connect(glWidget, &GLWidget::glInitialized, this, &MainWindow::createShaderSettings);
+}
 
-    // ---------------------
-    // SHADER SETTINGS SETUP
-    // ---------------------
+MainWindow::~MainWindow()
+{
+    delete glWidget;
+}
 
+void MainWindow::createShaderSettings()
+{
+    // TODO define in class
     auto connectSectionToShader = [&](Section* section, ShaderName shader)
     {
         // Connect checkbox
         connect(section, &Section::checkBoxStateChanged, glWidget,
-            [this, shader](bool state)
-            {
-                glWidget->handleShaderToggled(state, shader);
-            }
-        );
+                [this, shader](bool state)
+                {
+                    glWidget->handleShaderToggled(state, shader);
+                }
+                );
 
         // Connect up button
         connect(section, &Section::buttonUpPressed, glWidget,
-            [this, shader, section]()
-            {
-                if (moveSection(section, true))
-                    glWidget->handleShaderMoveUp(shader);
-            }
-        );
+                [this, shader, section]()
+                {
+                    if (moveSection(section, true))
+                        glWidget->handleShaderMoveUp(shader);
+                }
+                );
 
         //  Connect down button
         connect(section, &Section::buttonDownPressed, glWidget,
-            [this, shader, section]()
-            {
-                if (moveSection(section, false))
-                    glWidget->handleShaderMoveDown(shader);
-            }
-        );
+                [this, shader, section]()
+                {
+                    if (moveSection(section, false))
+                        glWidget->handleShaderMoveDown(shader);
+                }
+                );
 
         // Connect copy button
         connect(section, &Section::buttonCopyPressed, glWidget,
-            [this, shader]()
-            {
-                glWidget->handleShaderCopy(shader);
-            }
-        );
+                [this, shader]()
+                {
+                    glWidget->handleShaderCopy(shader);
+                }
+                );
 
         // Connect remove button
         connect(section, &Section::buttonRemovePressed, glWidget,
-            [this, shader]()
-            {
-                glWidget->handleShaderRemove(shader);
-            }
-        );
+                [this, shader]()
+                {
+                    glWidget->handleShaderRemove(shader);
+                }
+                );
     };
 
-    auto createShaderSection = [&](std::unique_ptr<Shader> shader, const QString& title)
+    auto createShaderSection = [&](const Shader* shader)
     {
-        Section* section = new Section(title, 0, mainWidget);
+        Section* section = new Section(shader->getTitle(), 0, mainWidget);
         connectSectionToShader(section, shader->getName());
-        QVBoxLayout* shaderLayout = createShaderParameters(shader->getName(), shader->getParameters());
+        QVBoxLayout* shaderLayout = createShaderParameters(shader->getName(),
+                                                           shader->getParameters());
         section->setContentLayout(*shaderLayout);
-        layout->addWidget(section);
+        mainLayout->addWidget(section);
 
         return section;
     };
 
 
     // SHADERS
-    createShaderSection(std::make_unique<CorrectionShader>(), "Color correction");
-    createShaderSection(std::make_unique<SharpnessShader>(), "Sharpness");
-    createShaderSection(std::make_unique<PosterizeShader>(), "Posterization");
-    Section* invertSection = createShaderSection(std::make_unique<InvertShader>(), "Invert colors");
-    invertSection->setNotExpandable(); // no parameters
 
-
-    // Set scroll area as central widget
-    this->setCentralWidget(scrollArea);
-}
-
-MainWindow::~MainWindow()
-{
-    delete glWidget;
+    for (auto shaderName : glWidget->getCurrentShaderOrder())
+    {
+        if (shaderName == ShaderName::Base) continue;
+        createShaderSection(glWidget->getShaderByName(shaderName));
+    }
 }
 
 void MainWindow::chooseFile()
@@ -181,7 +183,7 @@ bool MainWindow::moveSection(QWidget* widget, bool moveUp)
 QVBoxLayout* MainWindow::createShaderParameters(ShaderName shaderName,
     const std::vector<Shader::ValueTuple>& parameters)
 {
-    QVBoxLayout* parametersLayout = new QVBoxLayout(this);
+    QVBoxLayout* parametersLayout = new QVBoxLayout();
 
     for (const auto& valueTuple : parameters)
     {
@@ -216,7 +218,7 @@ QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
 
     // COLOR SELECTION
 
-    QHBoxLayout* horizLayoutColorPicker = new QHBoxLayout(this);
+    QHBoxLayout* horizLayoutColorPicker = new QHBoxLayout();
     QPushButton* selectColorButton = new QPushButton("Pick Color", this);
     horizLayoutColorPicker->addWidget(selectColorButton);
 
@@ -226,7 +228,7 @@ QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
     colorDisplayLabel->setStyleSheet("background-color: rgb(255, 255, 255); border: 1px solid black;");
     horizLayoutColorPicker->addWidget(colorDisplayLabel);
 
-    auto vbox = new QVBoxLayout(this);
+    auto vbox = new QVBoxLayout();
     vbox->addLayout(horizLayoutLabel);
     vbox->addLayout(horizLayoutColorPicker);
 
@@ -339,7 +341,7 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
 
     // VBOX
 
-    auto vbox = new QVBoxLayout(this);
+    auto vbox = new QVBoxLayout();
     vbox->addLayout(horizLayoutLabel);
     vbox->addLayout(horizLayoutSlider);
 

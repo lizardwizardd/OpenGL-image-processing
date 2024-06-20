@@ -17,14 +17,19 @@ public:
     MainWindow();
     ~MainWindow();
 
+public slots:
+    void createShaderSettings(); // called when glWidget is initialized
+
 private slots:
     void chooseFile();
     void resizeToImage(int width, int height);
     void closeEvent(QCloseEvent *event);
+
 private:
     GLWidget* glWidget;
     QWidget* mainWidget;
     QScrollArea* scrollArea;
+    QVBoxLayout* mainLayout; // settings layout
 
     bool moveSection(QWidget* widget, bool moveUp);
     QVBoxLayout* createLabelSlider(ShaderName shaderName, const Shader::ValueTuple& parameters);

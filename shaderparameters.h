@@ -77,6 +77,7 @@ public:
     }
 
     virtual std::vector<ValueTuple> getParameters() const = 0;
+    virtual const QString getTitle() const = 0;
 
     ShaderName getName() const
     { return name; }
@@ -104,6 +105,11 @@ public:
     {
         return {};
     }
+
+    const QString getTitle() const override
+    {
+        return "Base";
+    }
 };
 
 
@@ -130,6 +136,11 @@ public:
             {0,    100, 0, "filterIntensity", "Filter intensity", ParameterType::SLIDER}
         };
     }
+
+    const QString getTitle() const override
+    {
+        return "Color Correction";
+    }
 };
 
 
@@ -147,6 +158,11 @@ public:
         return {
             {0, 100, 10, "strength", "Strength", ParameterType::SLIDER}
         };
+    }
+
+    const QString getTitle() const override
+    {
+        return "Sharpness";
     }
 };
 
@@ -166,6 +182,11 @@ public:
             {1, 200, 100, "gamma", "Gamma", ParameterType::SLIDER}
         };
     }
+
+    const QString getTitle() const override
+    {
+        return "Posterization";
+    }
 };
 
 // COLOR REDUCTION SHADER
@@ -180,5 +201,10 @@ public:
     std::vector<ValueTuple> getParameters() const override
     {
         return {};
+    }
+
+    const QString getTitle() const override
+    {
+        return "Invert Colors";
     }
 };
