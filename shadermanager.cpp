@@ -11,38 +11,35 @@ ShaderManager::~ShaderManager()
         delete shaders.at(shaderName);
 }
 
-GLuint ShaderManager::getProgramId(ShaderName shader)
+void ShaderManager::initializeShader(ShaderID shaderId)
 {
-    return getShader(shader)->programId();
+    shaders.at(shaderId)->initializeUniforms();
 }
 
-void ShaderManager::initializeShader(ShaderName shaderName)
+void ShaderManager::disableAttributeArray(ShaderID shaderId, const char* attribName)
 {
-    shaders.at(shaderName)->initializeUniforms();
-}
-
-void ShaderManager::disableAttributeArray(ShaderName shader, const char* attribName)
-{
-    int attribLocation = getShader(shader)->attributeLocation(attribName);
+    int attribLocation = getShader(shaderId)->attributeLocation(attribName);
     if (attribLocation == -1)
         qDebug() << attribName << "is not a valid attribute";
-    getShader(shader)->disableAttributeArray(attribLocation);
+    getShader(shaderId)->disableAttributeArray(attribLocation);
 }
 
-void ShaderManager::setAttributeBuffer(ShaderName shader, const char *attribName,
+void ShaderManager::setAttributeBuffer(ShaderID shaderId, const char *attribName,
                               GLenum type, int offset, int tupleSize, int stride)
 {
-    int attribLocation = getShader(shader)->attributeLocation(attribName);
+    int attribLocation = getShader(shaderId)->attributeLocation(attribName);
     qDebug() << attribName << "is not a valid attribute";
-    getShader(shader)->enableAttributeArray(attribLocation);
-    getShader(shader)->setAttributeBuffer(attribLocation, type, offset,
+    getShader(shaderId)->enableAttributeArray(attribLocation);
+    getShader(shaderId)->setAttributeBuffer(attribLocation, type, offset,
                                           tupleSize, stride);
 }
 
-Shader* ShaderManager::getShader(ShaderName shaderName)
+// Get a pointer to Shader object by ShaderID
+Shader* ShaderManager::getShader(ShaderID shaderId)
 {
-    if (shaders.count(shaderName))
-        return shaders.at(shaderName);
+    // TODO try catch .at()
+    if (shaders.count(shaderId))
+        return shaders.at(shaderId);
     else
     {
         qDebug() << "getShader: no such shader in shader map";
@@ -50,19 +47,19 @@ Shader* ShaderManager::getShader(ShaderName shaderName)
     }
 }
 
-ShaderName ShaderManager::getShaderOrderByIndex(int i) const
+ShaderID ShaderManager::getShaderOrderByIndex(int i) const
 {
     return shadersOrder[i];
 }
 
-void ShaderManager::setShaderState(ShaderName shaderName, bool state)
+void ShaderManager::setShaderState(ShaderID shaderId, bool state)
 {
     try
     {
         if (state)
-            shaders.at(shaderName)->setActive();
+            shaders.at(shaderId)->setActive();
         else
-            shaders.at(shaderName)->setInactive();
+            shaders.at(shaderId)->setInactive();
     } catch (...)
     {
         qDebug() << "error thrown at setShaderState";
@@ -70,16 +67,16 @@ void ShaderManager::setShaderState(ShaderName shaderName, bool state)
 
 }
 
-bool ShaderManager::getShaderState(ShaderName shaderName) const
+bool ShaderManager::getShaderState(ShaderID shaderId) const
 {
-    return shaders.at(shaderName)->isActive();
+    return shaders.at(shaderId)->isActive();
 }
 
-void ShaderManager::moveShaderUp(ShaderName shader)
+void ShaderManager::moveShaderUp(ShaderID shaderId)
 {
     for (int i = 2; i < shadersOrder.size(); i++)
     {
-        if (shader == shadersOrder[i])
+        if (shaderId == shadersOrder[i])
         {
             std::swap(shadersOrder[i], shadersOrder[i - 1]);
             break;
@@ -87,11 +84,11 @@ void ShaderManager::moveShaderUp(ShaderName shader)
     }
 }
 
-void ShaderManager::moveShaderDown(ShaderName shader)
+void ShaderManager::moveShaderDown(ShaderID shaderId)
 {
     for (int i = 1; i < shadersOrder.size() - 1; i++)
     {
-        if (shader == shadersOrder[i])
+        if (shaderId == shadersOrder[i])
         {
             std::swap(shadersOrder[i], shadersOrder[i + 1]);
             break;
@@ -99,7 +96,7 @@ void ShaderManager::moveShaderDown(ShaderName shader)
     }
 }
 
-const std::vector<ShaderName>& ShaderManager::getCurrentOrder()
+const std::vector<ShaderID>& ShaderManager::getCurrentOrder()
 {
     return shadersOrder;
 }
@@ -120,23 +117,23 @@ int ShaderManager::getShaderCount()
     return shadersOrder.size();
 }
 
-void ShaderManager::setInt(ShaderName shader, const char *name, const int value)
+void ShaderManager::setInt(ShaderID shaderId, const char *name, const int value)
 {
-    shaders.at(shader)->setUniformValue(name, value);
+    shaders.at(shaderId)->setUniformValue(name, value);
 }
 
-void ShaderManager::setFloat(ShaderName shader, const char *name, const float value)
+void ShaderManager::setFloat(ShaderID shaderId, const char *name, const float value)
 {
-    shaders.at(shader)->setUniformValue(name, value);
+    shaders.at(shaderId)->setUniformValue(name, value);
 }
 
-void ShaderManager::setVec3(ShaderName shader, const char *name, const QVector3D& value)
+void ShaderManager::setVec3(ShaderID shaderId, const char *name, const QVector3D& value)
 {
-    shaders.at(shader)->setUniformValue(name, value);
+    shaders.at(shaderId)->setUniformValue(name, value);
 }
 
 void ShaderManager::addShader(Shader *shader)
 {
-    shaders.insert(std::make_pair(shader->getName(), shader));
-    shadersOrder.push_back(shader->getName()); // delete later
+    shaders.insert(std::make_pair(shader->getId(), shader));
+    shadersOrder.push_back(shader->getId());
 }

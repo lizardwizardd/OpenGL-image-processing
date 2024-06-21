@@ -36,16 +36,17 @@ Section::Section(const QString& title, const int animationDuration, QWidget* par
     upButton->setFixedSize(18, 18);
     upButton->setToolTip("Move up in order");
     upButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
+
     downButton->setText("D");
     downButton->setFixedSize(18, 18);
     downButton->setToolTip("Move down in order");
     downButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
+
     copyButton->setText("C");
-    copyButton->setVisible(false); // todo
     copyButton->setFixedSize(18, 18);
     copyButton->setToolTip("Copy");
     copyButton->setStyleSheet("QPushButton {background: rgb(240, 240, 240);}");
-    removeButton->setVisible(false); // todo
+
     removeButton->setText("R");
     removeButton->setFixedSize(18, 18);
     removeButton->setToolTip("Remove");
@@ -127,8 +128,6 @@ void Section::toggle(bool expanded)
     toggleAnimation->start();
 
     this->isExpanded = expanded;
-
-    qDebug() << "MV: toggle: isExpanded " << isExpanded;
 }
 
 void Section::setContentLayout(QLayout& contentLayout)

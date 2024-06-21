@@ -48,24 +48,24 @@ void GLWidget::initializeShaders()
     // Shaders are initialized inactive (except the base shader)
     currentShader = new BaseShader();
     currentShader->setActive();
-    shaderManager->addShader(currentShader);
     currentShader->compile();
+    shaderManager->addShader(currentShader);
 
     currentShader = new CorrectionShader();
-    shaderManager->addShader(currentShader);
     currentShader->compile();
+    shaderManager->addShader(currentShader);
 
     currentShader = new SharpnessShader();
-    shaderManager->addShader(currentShader);
     currentShader->compile();
+    shaderManager->addShader(currentShader);
 
     currentShader = new PosterizeShader();
-    shaderManager->addShader(currentShader);
     currentShader->compile();
+    shaderManager->addShader(currentShader);
 
     currentShader = new InvertShader();
-    shaderManager->addShader(currentShader);
     currentShader->compile();
+    shaderManager->addShader(currentShader);
 }
 
 bool GLWidget::loadTexture(const QString &filename)
@@ -128,9 +128,15 @@ bool GLWidget::loadTexture(const QString &filename)
 
         createFramebuffers();
 
-        useShader(ShaderName::Sharpness);
-        shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureWidth", texture->width());
-        shaderManager->setFloat(ShaderName::Sharpness, (char*)"textureHeight", texture->height());
+        for (auto shaderId : getCurrentShaderOrder())
+        {
+            if (getShaderById(shaderId)->getName() == ShaderName::Sharpness)
+            {
+                useShader(shaderId);
+                shaderManager->setFloat(shaderId, (char*)"textureWidth", texture->width());
+                shaderManager->setFloat(shaderId, (char*)"textureHeight", texture->height());
+            }
+        }
 
         // Handle size change
         int windowW = newTexture->width();
@@ -156,10 +162,10 @@ void GLWidget::paintGL()
     // UNIFORMS
 
     // Set scaleDiff to all shaders except the last one
-    ShaderName lastActiveShader = ShaderName::Base; // first, always active
+    ShaderID lastActiveShader = getCurrentShaderOrder()[0]; // first, always active
     for (int i = 0; i < shadersCount; i++)
     {
-        ShaderName currentShader = shaderManager->getShaderOrderByIndex(i);
+        ShaderID currentShader = shaderManager->getShaderOrderByIndex(i);
         if (shaderManager->getShaderState(currentShader))
             lastActiveShader = currentShader;
 
@@ -262,10 +268,10 @@ void GLWidget::resizeEvent(QResizeEvent *event)
 
     // Set scaleDiff to all shaders except the last one
     int shadersCount = fbos.size() + 1;
-    ShaderName lastActiveShader = ShaderName::Base; // first, always active
+    ShaderID lastActiveShader = getCurrentShaderOrder()[0]; // first, always active
     for (int i = 0; i < shadersCount; i++)
     {
-        ShaderName currentShader = shaderManager->getShaderOrderByIndex(i);
+        ShaderID currentShader = shaderManager->getShaderOrderByIndex(i);
         if (shaderManager->getShaderState(currentShader))
             lastActiveShader = currentShader;
 
@@ -403,36 +409,36 @@ void GLWidget::createFramebuffers()
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Back to default framebuffer
 }
 
-void GLWidget::changeUniformValue(int sliderValue, ShaderName shaderName,
+void GLWidget::changeUniformValue(int sliderValue, ShaderID shaderId,
                                   const char* uniformName)
 {
     if (!shaderManager)
     {
         return; // allowing to change shader parameters before file was opened
     }
-    useShader(shaderName);
-    shaderManager->setFloat(shaderName, uniformName, (float)sliderValue / 100.0f);
+    useShader(shaderId);
+    shaderManager->setFloat(shaderId, uniformName, (float)sliderValue / 100.0f);
     //qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
     this->update();
 }
 
-void GLWidget::changeUniformValue(const QVector3D color, ShaderName shaderName,
+void GLWidget::changeUniformValue(const QVector3D color, ShaderID shaderId,
                                   const char* uniformName)
 {
     if (!shaderManager)
     {
         return; // allowing to change shader parameters before file was opened
     }
-    useShader(shaderName);
-    shaderManager->setVec3(shaderName, uniformName, color);
+    useShader(shaderId);
+    shaderManager->setVec3(shaderId, uniformName, color);
     this->update();
 }
 
-void GLWidget::handleShaderToggled(bool state, ShaderName shaderName)
+void GLWidget::handleShaderToggled(bool state, ShaderID shaderId)
 {
     if (!shaderManager)
         return;
-    shaderManager->setShaderState(shaderName, state);
+    shaderManager->setShaderState(shaderId, state);
 
     glDeleteFramebuffers(fbos.size(), fbos.data());
     glDeleteTextures(colorBuffers.size(), colorBuffers.data());
@@ -441,49 +447,47 @@ void GLWidget::handleShaderToggled(bool state, ShaderName shaderName)
     update();
 }
 
-void GLWidget::handleShaderMoveUp(ShaderName shader)
+void GLWidget::handleShaderMoveUp(ShaderID shaderId)
 {
-    shaderManager->moveShaderUp(shader);
+    shaderManager->moveShaderUp(shaderId);
     createFramebuffers();
     this->update();
 }
 
-void GLWidget::handleShaderMoveDown(ShaderName shader)
+void GLWidget::handleShaderMoveDown(ShaderID shaderId)
 {
-    shaderManager->moveShaderDown(shader);
+    shaderManager->moveShaderDown(shaderId);
     createFramebuffers();
     this->update();
 }
 
-void GLWidget::handleShaderCopy(ShaderName shader)
+void GLWidget::handleShaderCopy(ShaderID shaderId)
 {
-    // TODO
     this->update();
 }
 
-void GLWidget::handleShaderRemove(ShaderName shader)
+void GLWidget::handleShaderRemove(ShaderID shaderId)
 {
-    // TODO
     this->update();
 }
 
-const std::vector<ShaderName> &GLWidget::getCurrentShaderOrder()
+const std::vector<ShaderID> &GLWidget::getCurrentShaderOrder()
 {
     return shaderManager->getCurrentOrder();
 }
 
-const Shader *GLWidget::getShaderByName(ShaderName shaderName)
+const Shader *GLWidget::getShaderById(ShaderID shaderId)
 {
-    return shaderManager->getShader(shaderName);
+    return shaderManager->getShader(shaderId);
 }
 
 void GLWidget::initializeUniforms()
 {
     for (int i = 0; i < shaderManager->getShaderCount(); i++)
     {
-        ShaderName current = shaderManager->getShaderOrderByIndex(i);
-        useShader(current);
-        shaderManager->initializeShader(current);
+        ShaderID currentId = shaderManager->getShaderOrderByIndex(i);
+        useShader(currentId);
+        shaderManager->initializeShader(currentId);
     }
 }
 
@@ -494,7 +498,7 @@ void GLWidget::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-inline void GLWidget::useShader(ShaderName shaderName)
+inline void GLWidget::useShader(ShaderID shaderId)
 {
-    glUseProgram(shaderManager->getProgramId(shaderName));
+    glUseProgram(shaderId);
 }

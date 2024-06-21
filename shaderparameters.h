@@ -76,6 +76,11 @@ public:
         }
     }
 
+    GLuint getId() const
+    {
+        return this->programId();
+    }
+
     virtual std::vector<ValueTuple> getParameters() const = 0;
     virtual const QString getTitle() const = 0;
 

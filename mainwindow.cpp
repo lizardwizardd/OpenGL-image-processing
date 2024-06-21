@@ -67,8 +67,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::createShaderSettings()
 {
-    // TODO define in class
-    auto connectSectionToShader = [&](Section* section, ShaderName shader)
+    static auto connectSectionToShader = [&](Section* section, ShaderID shader)
     {
         // Connect checkbox
         connect(section, &Section::checkBoxStateChanged, glWidget,
@@ -113,25 +112,27 @@ void MainWindow::createShaderSettings()
                 );
     };
 
-    auto createShaderSection = [&](const Shader* shader)
+    static auto createShaderSection = [&](const Shader* shader)
     {
         Section* section = new Section(shader->getTitle(), 0, mainWidget);
-        connectSectionToShader(section, shader->getName());
-        QVBoxLayout* shaderLayout = createShaderParameters(shader->getName(),
+        connectSectionToShader(section, shader->getId());
+        QVBoxLayout* shaderLayout = createShaderParameters(shader->getId(),
                                                            shader->getParameters());
         section->setContentLayout(*shaderLayout);
         mainLayout->addWidget(section);
+
+        if (shader->getParameters().size() == 0)
+            section->setNotExpandable();
 
         return section;
     };
 
 
     // SHADERS
-
-    for (auto shaderName : glWidget->getCurrentShaderOrder())
+    for (auto shaderId : glWidget->getCurrentShaderOrder())
     {
-        if (shaderName == ShaderName::Base) continue;
-        createShaderSection(glWidget->getShaderByName(shaderName));
+        if (glWidget->getShaderById(shaderId)->getName() == ShaderName::Base) continue;
+        createShaderSection(glWidget->getShaderById(shaderId));
     }
 }
 
@@ -180,7 +181,7 @@ bool MainWindow::moveSection(QWidget* widget, bool moveUp)
     return true;
 }
 
-QVBoxLayout* MainWindow::createShaderParameters(ShaderName shaderName,
+QVBoxLayout* MainWindow::createShaderParameters(ShaderID shaderId,
     const std::vector<Shader::ValueTuple>& parameters)
 {
     QVBoxLayout* parametersLayout = new QVBoxLayout();
@@ -190,10 +191,10 @@ QVBoxLayout* MainWindow::createShaderParameters(ShaderName shaderName,
         switch(std::get<5>(valueTuple))
         {
         case (ParameterType::SLIDER):
-            parametersLayout->addLayout(createLabelSlider(shaderName, valueTuple));
+            parametersLayout->addLayout(createLabelSlider(shaderId, valueTuple));
             break;
         case (ParameterType::COLORPICKER):
-            parametersLayout->addLayout(createLabelColorSelect(shaderName, valueTuple));
+            parametersLayout->addLayout(createLabelColorSelect(shaderId, valueTuple));
             break;
         }
     }
@@ -201,7 +202,7 @@ QVBoxLayout* MainWindow::createShaderParameters(ShaderName shaderName,
     return parametersLayout;
 }
 
-QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
+QVBoxLayout* MainWindow::createLabelColorSelect(ShaderID shaderId,
     const Shader::ValueTuple& parameters)
 {
     // LABEL
@@ -234,7 +235,7 @@ QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
 
     auto color = std::make_shared<QColor>(255, 255, 255);
 
-    connect(selectColorButton, &QPushButton::clicked, this, [this, colorDisplayLabel, color, shaderName, uniformName = std::get<3>(parameters)]() {
+    connect(selectColorButton, &QPushButton::clicked, this, [this, colorDisplayLabel, color, shaderId, uniformName = std::get<3>(parameters)]() {
         QColor selectedColor = QColorDialog::getColor(*color, this, "Select Color");
         if (selectedColor.isValid()) {
             *color = selectedColor;
@@ -244,7 +245,7 @@ QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
 
             // Update the shader with the new color
             QVector3D colorVec(color->redF(), color->greenF(), color->blueF());
-            this->glWidget->changeUniformValue(colorVec, shaderName, uniformName);
+            this->glWidget->changeUniformValue(colorVec, shaderId, uniformName);
         }
     });
 
@@ -252,7 +253,7 @@ QVBoxLayout* MainWindow::createLabelColorSelect(ShaderName shaderName,
 }
 
 
-QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
+QVBoxLayout* MainWindow::createLabelSlider(ShaderID shaderId,
     const Shader::ValueTuple& parameters)
 {
     // LABEL
@@ -315,10 +316,10 @@ QVBoxLayout* MainWindow::createLabelSlider(ShaderName shaderName,
     // CONNECT
 
     connect(slider, &QSlider::valueChanged, this,
-            [this, shaderName, uniformName](int value)
+            [this, shaderId, uniformName](int value)
             {
                 this->glWidget->changeUniformValue
-                    (value, shaderName, uniformName);
+                    (value, shaderId, uniformName);
             });
 
     connect(slider, &QSlider::valueChanged, this,

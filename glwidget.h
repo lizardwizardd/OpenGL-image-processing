@@ -23,19 +23,19 @@ public:
 
     bool loadTexture(const QString &filename);
     void initializeUniforms();
-    void changeUniformValue(int sliderValue, ShaderName shaderName,
+    void changeUniformValue(int sliderValue, ShaderID shaderId,
                             const char* uniformName);
-    void changeUniformValue(const QVector3D color, ShaderName shaderName,
+    void changeUniformValue(const QVector3D color, ShaderID shaderId,
                             const char *uniformName);
 
-    void handleShaderToggled(bool state, ShaderName shaderName);
-    void handleShaderMoveUp(ShaderName shader);
-    void handleShaderMoveDown(ShaderName shader);
-    void handleShaderCopy(ShaderName shader);
-    void handleShaderRemove(ShaderName shader);
+    void handleShaderToggled(bool state, ShaderID shaderId);
+    void handleShaderMoveUp(ShaderID shaderId);
+    void handleShaderMoveDown(ShaderID shaderId);
+    void handleShaderCopy(ShaderID shaderId);
+    void handleShaderRemove(ShaderID shaderId);
 
-    const std::vector<ShaderName>& getCurrentShaderOrder();
-    const Shader* getShaderByName(ShaderName shaderName);
+    const std::vector<ShaderID>& getCurrentShaderOrder();
+    const Shader* getShaderById(ShaderID shaderId);
 
 signals:
     void imageSizeChanged(int width, int height);
@@ -65,7 +65,7 @@ private:
 
     void initializeBuffers();
     void closeEvent(QCloseEvent *event) override;
-    void useShader(ShaderName shaderName);
+    void useShader(ShaderID shaderId);
     void createFramebuffers();
     void initializeShaders();
 };

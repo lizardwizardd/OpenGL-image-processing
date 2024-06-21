@@ -32,9 +32,9 @@ private:
     QVBoxLayout* mainLayout; // settings layout
 
     bool moveSection(QWidget* widget, bool moveUp);
-    QVBoxLayout* createLabelSlider(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QVBoxLayout* createLabelColorSelect(ShaderName shaderName, const Shader::ValueTuple& parameters);
-    QVBoxLayout* createShaderParameters(ShaderName shaderName, const std::vector<Shader::ValueTuple> &parameters);
+    QVBoxLayout* createLabelSlider(ShaderID shaderId, const Shader::ValueTuple& parameters);
+    QVBoxLayout* createLabelColorSelect(ShaderID shaderId, const Shader::ValueTuple& parameters);
+    QVBoxLayout* createShaderParameters(ShaderID shaderId, const std::vector<Shader::ValueTuple> &parameters);
 };
 
 #endif // MAINWINDOW_H

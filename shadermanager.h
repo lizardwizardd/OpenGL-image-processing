@@ -8,38 +8,39 @@
 
 #include "shaderparameters.h"
 
+#define ShaderID GLuint
+
 class ShaderManager
 {
 public:
     ShaderManager();
     ~ShaderManager();
 
-    GLuint getProgramId(ShaderName shader);
-    void initializeShader(ShaderName shaderName);
-    void disableAttributeArray(ShaderName shader, const char* attribName);
-    void setAttributeBuffer(ShaderName shader, const char* attribName,
+    void initializeShader(ShaderID shaderId);
+    void disableAttributeArray(ShaderID shaderId, const char* attribName);
+    void setAttributeBuffer(ShaderID shaderId, const char* attribName,
                             GLenum type, int offset, int tupleSize, int stride);
 
-    void setInt(ShaderName shader, const char* name, const int value);
-    void setFloat(ShaderName shader, const char* name, const float value);
-    void setVec3(ShaderName shader, const char* name, const QVector3D& value);
+    void setInt(ShaderID shaderId, const char* name, const int value);
+    void setFloat(ShaderID shaderId, const char* name, const float value);
+    void setVec3(ShaderID shaderId, const char* name, const QVector3D& value);
 
     void addShader(Shader* shader);
-    Shader *getShader(ShaderName shaderName);
-    ShaderName getShaderOrderByIndex(int i) const;
-    void setShaderState(ShaderName shaderName, bool state);
+    Shader *getShader(ShaderID shaderId);
+    ShaderID getShaderOrderByIndex(int i) const;
+    void setShaderState(ShaderID shaderId, bool state);
     int countActiveShaders();
     int getShaderCount();
-    bool getShaderState(ShaderName shaderName) const;
+    bool getShaderState(ShaderID shaderId) const;
 
-    void moveShaderUp(ShaderName shader);
-    void moveShaderDown(ShaderName shader);
+    void moveShaderUp(ShaderID shaderId);
+    void moveShaderDown(ShaderID shaderId);
 
-    const std::vector<ShaderName>& getCurrentOrder();
+    const std::vector<ShaderID>& getCurrentOrder();
 
 private:
-    std::unordered_map<ShaderName, Shader*> shaders;
-    std::vector<ShaderName> shadersOrder;
+    std::unordered_map<ShaderID, Shader*> shaders;
+    std::vector<ShaderID> shadersOrder;
 };
 
 #endif // SHADERMANAGER_H
