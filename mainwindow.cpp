@@ -57,7 +57,7 @@ MainWindow::MainWindow()
     connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
     connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
-    connect(glWidget, &GLWidget::needToRecreateGUI, this, &MainWindow::createShaderControls);
+    connect(glWidget, &GLWidget::needToCreateGUI, this, &MainWindow::createShaderControls);
 }
 
 MainWindow::~MainWindow()
@@ -65,81 +65,10 @@ MainWindow::~MainWindow()
     delete glWidget;
 }
 
-// Initialize GUI based on
+// Create GUI based on shader manager's contents.
+// Called once when glWidget is initialized
 void MainWindow::createShaderControls()
 {
-    while (QLayoutItem* item = mainLayout->takeAt(0)) {
-        if (QWidget* widget = item->widget()) {
-            widget->deleteLater();
-        }
-        delete item;
-    }
-
-    static auto connectSectionToShader = [&](Section* section, ShaderID shader)
-    {
-        // Connect checkbox
-        connect(section, &Section::checkBoxStateChanged, glWidget,
-                [this, shader](bool state)
-                {
-                    glWidget->handleShaderToggled(state, shader);
-                }
-                );
-
-        // Connect up button
-        connect(section, &Section::buttonUpPressed, glWidget,
-                [this, shader, section]()
-                {
-                    if (moveSection(section, true))
-                        glWidget->handleShaderMoveUp(shader);
-                }
-                );
-
-        // Connect down button
-        connect(section, &Section::buttonDownPressed, glWidget,
-                [this, shader, section]()
-                {
-                    if (moveSection(section, false))
-                        glWidget->handleShaderMoveDown(shader);
-                }
-                );
-
-        // Connect copy button
-        connect(section, &Section::buttonCopyPressed, glWidget,
-                [this, shader]()
-                {
-                    glWidget->handleShaderCopy(shader);
-                }
-                );
-
-        // Connect remove button
-        connect(section, &Section::buttonRemovePressed, glWidget,
-                [this, shader]()
-                {
-                    glWidget->handleShaderRemove(shader);
-                }
-                );
-    };
-
-    static auto createShaderSection = [&](const Shader* shader)
-    {
-        Section* section = new Section(shader->getTitle(), 0, mainWidget);
-        connectSectionToShader(section, shader->getId());
-        QVBoxLayout* shaderLayout = createShaderParameters(shader->getId(),
-                                                           shader->getParameters());
-        section->setContentLayout(*shaderLayout);
-        mainLayout->addWidget(section);
-
-        // Not expandable if no parameters
-        if (shader->getParameters().size() == 0)
-            section->setNotExpandable();
-
-        // Set correct checkbox state
-        section->checkBoxStateChangedSlot(shader->isActive());
-
-        return section;
-    };
-
-    // SHADERS
     for (auto shaderId : glWidget->getCurrentShaderOrder())
     {
         if (glWidget->getShaderById(shaderId)->getName() == ShaderName::Base) continue;
@@ -172,6 +101,73 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (glWidget)
         glWidget->close();
     event->accept();
+}
+
+Section *MainWindow::createShaderSection(const Shader *shader)
+{
+    Section* section = new Section(shader->getTitle(), 0, mainWidget);
+    connectSectionToShader(section, shader->getId());
+    QVBoxLayout* shaderLayout = createShaderParameters(shader->getId(),
+                                                       shader->getParameters());
+    section->setContentLayout(*shaderLayout);
+    mainLayout->addWidget(section);
+
+    // Not expandable if no parameters
+    if (shader->getParameters().size() == 0)
+        section->setNotExpandable();
+
+    return section;
+}
+
+void MainWindow::connectSectionToShader(Section* section, ShaderID shader)
+{
+    // TODO functions for each connect
+    // Connect checkbox
+    connect(section, &Section::checkBoxStateChanged, glWidget,
+            [this, shader](bool state)
+            {
+                glWidget->handleShaderToggled(state, shader);
+            }
+            );
+
+    // Connect up button
+    connect(section, &Section::buttonUpPressed, glWidget,
+            [this, shader, section]()
+            {
+                if (moveSection(section, true))
+                    glWidget->handleShaderMoveUp(shader);
+            }
+            );
+
+    // Connect down button
+    connect(section, &Section::buttonDownPressed, glWidget,
+            [this, shader, section]()
+            {
+                if (moveSection(section, false))
+                    glWidget->handleShaderMoveDown(shader);
+            }
+            );
+
+    // Connect copy button
+    connect(section, &Section::buttonCopyPressed, glWidget,
+            [this, shader]()
+            {
+                auto[newShaderPtr, indexInShaderOrder] = glWidget->handleShaderCopy(shader);
+                auto newSection = createShaderSection(newShaderPtr);
+                // -1 because there's no base shader section
+                mainLayout->insertWidget(indexInShaderOrder - 1, newSection);
+            }
+            );
+
+    // Connect remove button
+    connect(section, &Section::buttonRemovePressed, glWidget,
+            [this, shader]()
+            {
+                int indexInShaderOrder = glWidget->handleShaderRemove(shader);
+                // -1 because there's no base shader section
+                delete mainLayout->takeAt(indexInShaderOrder - 1)->widget();
+            }
+            );
 }
 
 bool MainWindow::moveSection(QWidget* widget, bool moveUp)

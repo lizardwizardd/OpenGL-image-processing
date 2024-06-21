@@ -209,7 +209,7 @@ public:
 
     [[nodiscard]] Shader* createCopy() const override
     {
-        return new SharpnessShader();
+        return new PosterizeShader();
     }
 };
 

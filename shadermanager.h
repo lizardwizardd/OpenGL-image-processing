@@ -37,8 +37,8 @@ public:
 
     void moveShaderUp(ShaderID shaderId);
     void moveShaderDown(ShaderID shaderId);
-    void copyShader(ShaderID shaderId);
-    void deleteShader(ShaderID shaderId);
+    QPair<Shader*, int> copyShader(ShaderID shaderId);
+    int deleteShader(ShaderID shaderId);
 
     const QVector<ShaderID>& getCurrentOrder();
 

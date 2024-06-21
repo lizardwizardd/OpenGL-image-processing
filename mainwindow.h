@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QScrollArea>
 
+#include "section.h"
 #include "glwidget.h"
 
 class MainWindow : public QMainWindow
@@ -30,6 +31,9 @@ private:
     QWidget* mainWidget;
     QScrollArea* scrollArea;
     QVBoxLayout* mainLayout; // settings layout
+
+    Section* createShaderSection(const Shader* shader);
+    void connectSectionToShader(Section* section, ShaderID shader);
 
     bool moveSection(QWidget* widget, bool moveUp);
     QVBoxLayout* createLabelSlider(ShaderID shaderId, const Shader::ValueTuple& parameters);

@@ -38,7 +38,7 @@ void GLWidget::initializeGL()
     initializeBuffers();
     initializeUniforms();
 
-    emit needToRecreateGUI();
+    emit needToCreateGUI();
 }
 
 void GLWidget::initializeShaders()
@@ -418,7 +418,6 @@ void GLWidget::changeUniformValue(int sliderValue, ShaderID shaderId,
     }
     useShader(shaderId);
     shaderManager->setFloat(shaderId, uniformName, (float)sliderValue / 100.0f);
-    //qDebug() << "setting" << (int)shaderName << uniformName << (float)sliderValue / 100.0f;
     this->update();
 }
 
@@ -461,18 +460,26 @@ void GLWidget::handleShaderMoveDown(ShaderID shaderId)
     this->update();
 }
 
-void GLWidget::handleShaderCopy(ShaderID shaderId)
+// Returns ptr to new shader and its index in shaderOrder
+QPair<Shader*, int> GLWidget::handleShaderCopy(ShaderID shaderId)
 {
-    shaderManager->copyShader(shaderId);
-    emit needToRecreateGUI();
+    auto ShaderIndexPair = shaderManager->copyShader(shaderId);
+    createFramebuffers();
+    useShader(ShaderIndexPair.first->getId());
+    shaderManager->initializeShader(ShaderIndexPair.first->getId());
     this->update();
+
+    return ShaderIndexPair;
 }
 
-void GLWidget::handleShaderRemove(ShaderID shaderId)
+// Returns index that deleted shader was at
+int GLWidget::handleShaderRemove(ShaderID shaderId)
 {
-    shaderManager->deleteShader(shaderId);
-    emit needToRecreateGUI();
+    auto indexOfDeleted = shaderManager->deleteShader(shaderId);
+    createFramebuffers();
     this->update();
+
+    return indexOfDeleted;
 }
 
 const QVector<ShaderID> &GLWidget::getCurrentShaderOrder()

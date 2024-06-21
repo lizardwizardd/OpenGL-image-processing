@@ -31,15 +31,15 @@ public:
     void handleShaderToggled(bool state, ShaderID shaderId);
     void handleShaderMoveUp(ShaderID shaderId);
     void handleShaderMoveDown(ShaderID shaderId);
-    void handleShaderCopy(ShaderID shaderId);
-    void handleShaderRemove(ShaderID shaderId);
+    QPair<Shader*, int> handleShaderCopy(ShaderID shaderId);
+    int handleShaderRemove(ShaderID shaderId);
 
     const QVector<ShaderID>& getCurrentShaderOrder();
     const Shader* getShaderById(ShaderID shaderId);
 
 signals:
     void imageSizeChanged(int width, int height);
-    void needToRecreateGUI();
+    void needToCreateGUI();
 
 protected:
     void initializeGL() override;

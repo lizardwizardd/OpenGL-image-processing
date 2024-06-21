@@ -106,25 +106,32 @@ void ShaderManager::moveShaderDown(ShaderID shaderId)
     }
 }
 
-void ShaderManager::copyShader(GLuint shaderId)
+// Returns ptr to new shader and its index in shaderOrder
+QPair<Shader*, int> ShaderManager::copyShader(GLuint shaderId)
 {
     Shader* newShader = getShader(shaderId)->createCopy();
     newShader->compile();
-    newShader->initializeUniforms();
     assert(newShader->getId() != shaderId);
 
     shaders.insert(std::make_pair(newShader->getId(), newShader));
-    shadersOrder.insert(this->getIndexInOrder(shaderId) + 1, newShader->getId());
+    int indexToInsert = this->getIndexInOrder(shaderId) + 1;
+    shadersOrder.insert(indexToInsert, newShader->getId());
+
+    return qMakePair(newShader, indexToInsert);
 }
 
+// Returns index that deleted shader was at
 // todo check if last
-void ShaderManager::deleteShader(GLuint shaderId)
+int ShaderManager::deleteShader(GLuint shaderId)
 {
     delete shaders.at(shaderId);
     shaders[shaderId] = nullptr;
     shaders.erase(shaderId);
 
-    shadersOrder.removeAt(getIndexInOrder(shaderId));
+    int indexToRemove = getIndexInOrder(shaderId);
+    shadersOrder.removeAt(indexToRemove);
+
+    return indexToRemove;
 }
 
 const QVector<ShaderID>& ShaderManager::getCurrentOrder()
@@ -148,22 +155,22 @@ int ShaderManager::getShaderCount()
     return shadersOrder.size();
 }
 
-void ShaderManager::setInt(ShaderID shaderId, const char *name, const int value)
+void ShaderManager::setInt(ShaderID shaderId, const char* name, const int value)
 {
     shaders.at(shaderId)->setUniformValue(name, value);
 }
 
-void ShaderManager::setFloat(ShaderID shaderId, const char *name, const float value)
+void ShaderManager::setFloat(ShaderID shaderId, const char* name, const float value)
 {
     shaders.at(shaderId)->setUniformValue(name, value);
 }
 
-void ShaderManager::setVec3(ShaderID shaderId, const char *name, const QVector3D& value)
+void ShaderManager::setVec3(ShaderID shaderId, const char* name, const QVector3D& value)
 {
     shaders.at(shaderId)->setUniformValue(name, value);
 }
 
-void ShaderManager::addShader(Shader *shader)
+void ShaderManager::addShader(Shader* shader)
 {
     shaders.insert(std::make_pair(shader->getId(), shader));
     shadersOrder.push_back(shader->getId());
