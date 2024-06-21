@@ -1,6 +1,7 @@
-
 #include "shadermanager.h"
+
 #include <QOpenGLFunctions>
+#include <sstream>
 
 ShaderManager::ShaderManager()
 {}
@@ -31,13 +32,12 @@ void ShaderManager::setAttributeBuffer(ShaderID shaderId, const char *attribName
     qDebug() << attribName << "is not a valid attribute";
     getShader(shaderId)->enableAttributeArray(attribLocation);
     getShader(shaderId)->setAttributeBuffer(attribLocation, type, offset,
-                                          tupleSize, stride);
+                                            tupleSize, stride);
 }
 
 // Get a pointer to Shader object by ShaderID
 Shader* ShaderManager::getShader(ShaderID shaderId)
 {
-    // TODO try catch .at()
     if (shaders.count(shaderId))
         return shaders.at(shaderId);
     else
@@ -50,6 +50,16 @@ Shader* ShaderManager::getShader(ShaderID shaderId)
 ShaderID ShaderManager::getShaderOrderByIndex(int i) const
 {
     return shadersOrder[i];
+}
+
+size_t ShaderManager::getIndexInOrder(GLuint shaderId) const
+{
+    for (size_t i = 0; i < shadersOrder.size(); i++)
+    {
+        if (shadersOrder[i] == shaderId)
+            return i;
+    }
+    throw std::invalid_argument("ID not found in shaderOrder vector");
 }
 
 void ShaderManager::setShaderState(ShaderID shaderId, bool state)
@@ -96,7 +106,28 @@ void ShaderManager::moveShaderDown(ShaderID shaderId)
     }
 }
 
-const std::vector<ShaderID>& ShaderManager::getCurrentOrder()
+void ShaderManager::copyShader(GLuint shaderId)
+{
+    Shader* newShader = getShader(shaderId)->createCopy();
+    newShader->compile();
+    newShader->initializeUniforms();
+    assert(newShader->getId() != shaderId);
+
+    shaders.insert(std::make_pair(newShader->getId(), newShader));
+    shadersOrder.insert(this->getIndexInOrder(shaderId) + 1, newShader->getId());
+}
+
+// todo check if last
+void ShaderManager::deleteShader(GLuint shaderId)
+{
+    delete shaders.at(shaderId);
+    shaders[shaderId] = nullptr;
+    shaders.erase(shaderId);
+
+    shadersOrder.removeAt(getIndexInOrder(shaderId));
+}
+
+const QVector<ShaderID>& ShaderManager::getCurrentOrder()
 {
     return shadersOrder;
 }

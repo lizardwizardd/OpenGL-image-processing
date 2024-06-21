@@ -77,12 +77,7 @@ public:
     }
 
     GLuint getId() const
-    {
-        return this->programId();
-    }
-
-    virtual std::vector<ValueTuple> getParameters() const = 0;
-    virtual const QString getTitle() const = 0;
+    { return this->programId(); }
 
     ShaderName getName() const
     { return name; }
@@ -95,6 +90,10 @@ public:
 
     void setInactive()
     { state = false; }
+
+    virtual std::vector<ValueTuple> getParameters() const = 0;
+    virtual const QString getTitle() const = 0;
+    [[nodiscard]] virtual Shader* createCopy() const = 0;
 };
 
 // BASE SHADER
@@ -114,6 +113,11 @@ public:
     const QString getTitle() const override
     {
         return "Base";
+    }
+
+    [[nodiscard]] Shader* createCopy() const override
+    {
+        return new BaseShader();
     }
 };
 
@@ -146,6 +150,11 @@ public:
     {
         return "Color Correction";
     }
+
+    [[nodiscard]] Shader* createCopy() const override
+    {
+        return new CorrectionShader();
+    }
 };
 
 
@@ -168,6 +177,11 @@ public:
     const QString getTitle() const override
     {
         return "Sharpness";
+    }
+
+    [[nodiscard]] Shader* createCopy() const override
+    {
+        return new SharpnessShader();
     }
 };
 
@@ -192,6 +206,11 @@ public:
     {
         return "Posterization";
     }
+
+    [[nodiscard]] Shader* createCopy() const override
+    {
+        return new SharpnessShader();
+    }
 };
 
 // COLOR REDUCTION SHADER
@@ -211,5 +230,10 @@ public:
     const QString getTitle() const override
     {
         return "Invert Colors";
+    }
+
+    [[nodiscard]] Shader* createCopy() const override
+    {
+        return new InvertShader();
     }
 };

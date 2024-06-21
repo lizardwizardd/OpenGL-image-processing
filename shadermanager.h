@@ -4,6 +4,7 @@
 
 #include <map>
 #include <unordered_map>
+#include <QVector>
 #include <QOpenGLShaderProgram>
 
 #include "shaderparameters.h"
@@ -28,6 +29,7 @@ public:
     void addShader(Shader* shader);
     Shader *getShader(ShaderID shaderId);
     ShaderID getShaderOrderByIndex(int i) const;
+    size_t getIndexInOrder(ShaderID shaderId) const;
     void setShaderState(ShaderID shaderId, bool state);
     int countActiveShaders();
     int getShaderCount();
@@ -35,12 +37,14 @@ public:
 
     void moveShaderUp(ShaderID shaderId);
     void moveShaderDown(ShaderID shaderId);
+    void copyShader(ShaderID shaderId);
+    void deleteShader(ShaderID shaderId);
 
-    const std::vector<ShaderID>& getCurrentOrder();
+    const QVector<ShaderID>& getCurrentOrder();
 
 private:
     std::unordered_map<ShaderID, Shader*> shaders;
-    std::vector<ShaderID> shadersOrder;
+    QVector<ShaderID> shadersOrder;
 };
 
 #endif // SHADERMANAGER_H

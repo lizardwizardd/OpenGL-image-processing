@@ -57,7 +57,7 @@ MainWindow::MainWindow()
     connect(openFile, &QAction::triggered, this, &MainWindow::chooseFile);
     connect(this, &MainWindow::destroyed, glWidget, &GLWidget::close);
     connect(glWidget, &GLWidget::destroyed, this, &MainWindow::close);
-    connect(glWidget, &GLWidget::glInitialized, this, &MainWindow::createShaderSettings);
+    connect(glWidget, &GLWidget::needToRecreateGUI, this, &MainWindow::createShaderControls);
 }
 
 MainWindow::~MainWindow()
@@ -65,8 +65,16 @@ MainWindow::~MainWindow()
     delete glWidget;
 }
 
-void MainWindow::createShaderSettings()
+// Initialize GUI based on
+void MainWindow::createShaderControls()
 {
+    while (QLayoutItem* item = mainLayout->takeAt(0)) {
+        if (QWidget* widget = item->widget()) {
+            widget->deleteLater();
+        }
+        delete item;
+    }
+
     static auto connectSectionToShader = [&](Section* section, ShaderID shader)
     {
         // Connect checkbox
@@ -86,7 +94,7 @@ void MainWindow::createShaderSettings()
                 }
                 );
 
-        //  Connect down button
+        // Connect down button
         connect(section, &Section::buttonDownPressed, glWidget,
                 [this, shader, section]()
                 {
@@ -121,12 +129,15 @@ void MainWindow::createShaderSettings()
         section->setContentLayout(*shaderLayout);
         mainLayout->addWidget(section);
 
+        // Not expandable if no parameters
         if (shader->getParameters().size() == 0)
             section->setNotExpandable();
 
+        // Set correct checkbox state
+        section->checkBoxStateChangedSlot(shader->isActive());
+
         return section;
     };
-
 
     // SHADERS
     for (auto shaderId : glWidget->getCurrentShaderOrder())

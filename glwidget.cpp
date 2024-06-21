@@ -38,7 +38,7 @@ void GLWidget::initializeGL()
     initializeBuffers();
     initializeUniforms();
 
-    emit glInitialized();
+    emit needToRecreateGUI();
 }
 
 void GLWidget::initializeShaders()
@@ -463,15 +463,19 @@ void GLWidget::handleShaderMoveDown(ShaderID shaderId)
 
 void GLWidget::handleShaderCopy(ShaderID shaderId)
 {
+    shaderManager->copyShader(shaderId);
+    emit needToRecreateGUI();
     this->update();
 }
 
 void GLWidget::handleShaderRemove(ShaderID shaderId)
 {
+    shaderManager->deleteShader(shaderId);
+    emit needToRecreateGUI();
     this->update();
 }
 
-const std::vector<ShaderID> &GLWidget::getCurrentShaderOrder()
+const QVector<ShaderID> &GLWidget::getCurrentShaderOrder()
 {
     return shaderManager->getCurrentOrder();
 }

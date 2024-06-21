@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void createShaderSettings(); // called when glWidget is initialized
+    void createShaderControls(); // called when glWidget is initialized
 
 private slots:
     void chooseFile();

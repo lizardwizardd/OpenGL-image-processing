@@ -34,12 +34,12 @@ public:
     void handleShaderCopy(ShaderID shaderId);
     void handleShaderRemove(ShaderID shaderId);
 
-    const std::vector<ShaderID>& getCurrentShaderOrder();
+    const QVector<ShaderID>& getCurrentShaderOrder();
     const Shader* getShaderById(ShaderID shaderId);
 
 signals:
     void imageSizeChanged(int width, int height);
-    void glInitialized();
+    void needToRecreateGUI();
 
 protected:
     void initializeGL() override;
