@@ -465,8 +465,19 @@ QPair<Shader*, int> GLWidget::handleShaderCopy(ShaderID shaderId)
 {
     auto ShaderIndexPair = shaderManager->copyShader(shaderId);
     createFramebuffers();
-    useShader(ShaderIndexPair.first->getId());
-    shaderManager->initializeShader(ShaderIndexPair.first->getId());
+
+    GLuint newShaderId = ShaderIndexPair.first->getId();
+    useShader(newShaderId);
+    shaderManager->initializeShader(newShaderId);
+
+    // Set uniforms if sharpness shader
+    if (getShaderById(newShaderId)->getName() == ShaderName::Sharpness)
+    {
+        useShader(newShaderId);
+        shaderManager->setFloat(newShaderId, (char*)"textureWidth", texture->width());
+        shaderManager->setFloat(newShaderId, (char*)"textureHeight", texture->height());
+    }
+
     this->update();
 
     return ShaderIndexPair;
