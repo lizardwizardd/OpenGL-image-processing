@@ -130,7 +130,7 @@ bool GLWidget::loadTexture(const QString &filename)
 
         for (auto shaderId : getCurrentShaderOrder())
         {
-            if (getShaderById(shaderId)->getName() == ShaderName::Sharpness)
+            if (getShaderById(shaderId)->getName() == ShaderType::Sharpness)
             {
                 useShader(shaderId);
                 shaderManager->setFloat(shaderId, (char*)"textureWidth", texture->width());
@@ -471,7 +471,7 @@ QPair<Shader*, int> GLWidget::handleShaderCopy(ShaderID shaderId)
     shaderManager->initializeShader(newShaderId);
 
     // Set uniforms if sharpness shader
-    if (getShaderById(newShaderId)->getName() == ShaderName::Sharpness)
+    if (ShaderIndexPair.first->getName() == ShaderType::Sharpness)
     {
         useShader(newShaderId);
         shaderManager->setFloat(newShaderId, (char*)"textureWidth", texture->width());

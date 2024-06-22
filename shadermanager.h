@@ -27,6 +27,12 @@ public:
     void setVec3(ShaderID shaderId, const char* name, const QVector3D& value);
 
     void addShader(Shader* shader);
+    void addShader(Shader* shader, int insertIndex);
+    void moveShaderUp(ShaderID shaderId);
+    void moveShaderDown(ShaderID shaderId);
+    QPair<Shader*, int> copyShader(ShaderID shaderId);
+    int deleteShader(ShaderID shaderId);
+
     Shader *getShader(ShaderID shaderId);
     ShaderID getShaderOrderByIndex(int i) const;
     size_t getIndexInOrder(ShaderID shaderId) const;
@@ -34,16 +40,13 @@ public:
     int countActiveShaders();
     int getShaderCount();
     bool getShaderState(ShaderID shaderId) const;
-
-    void moveShaderUp(ShaderID shaderId);
-    void moveShaderDown(ShaderID shaderId);
-    QPair<Shader*, int> copyShader(ShaderID shaderId);
-    int deleteShader(ShaderID shaderId);
+    unsigned int getTypeCopiesCount(const ShaderType shaderType);
 
     const QVector<ShaderID>& getCurrentOrder();
 
 private:
     std::unordered_map<ShaderID, Shader*> shaders;
+    std::unordered_map<ShaderType, unsigned int> typeCopiesCount;
     QVector<ShaderID> shadersOrder;
 };
 

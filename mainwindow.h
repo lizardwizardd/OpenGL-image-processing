@@ -32,7 +32,7 @@ private:
     QScrollArea* scrollArea;
     QVBoxLayout* mainLayout; // settings layout
 
-    Section* createShaderSection(const Shader* shader);
+    Section* createShaderSection(const Shader* shader, bool titleWithNumber = false);
     void connectSectionToShader(Section* section, ShaderID shader);
 
     bool moveSection(QWidget* widget, bool moveUp);

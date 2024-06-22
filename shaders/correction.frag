@@ -49,8 +49,8 @@ vec3 colorTemperatureToRGB(const in float temperature)
 
 vec3 adjustTemperature(vec3 color, float temperatureInput)
 {
-    // Map [-1, 1] to [1000, 40000]
-    float temperatureValue = mix(1000.0, 12000.0, (temperatureInput + 1) * 0.5);
+    // Map [-1, 1] to [min, max]
+    float temperatureValue = mix(1000.0, 13000.0, (temperatureInput + 1) * 0.5);
     vec3 outColor = mix(color, color * colorTemperatureToRGB(temperatureValue), 1.0);
     outColor *= mix(1.0, dot(color, vec3(0.2126, 0.7152, 0.0722)) / max(dot(outColor,
                     vec3(0.2126, 0.7152, 0.0722)), 1e-5), LuminancePreservationFactor);

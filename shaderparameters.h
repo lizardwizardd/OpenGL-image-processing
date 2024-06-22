@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <vector>
 
-enum class ShaderName
+enum class ShaderType
 {
     Base,
     Correction,
@@ -30,11 +30,12 @@ protected:
 
     QString vertexShaderPath;
     QString fragmentShaderPath;
-    ShaderName name;
+    ShaderType name;
     bool state;
 
 public:
-    Shader(const QString& vertexPath, const QString& fragmentPath, ShaderName shaderName, bool activeState = false) :
+    Shader(const QString& vertexPath, const QString& fragmentPath,
+           ShaderType shaderName, bool activeState = false) :
         vertexShaderPath(vertexPath),
         fragmentShaderPath(fragmentPath),
         name(shaderName),
@@ -70,7 +71,6 @@ public:
             }
             else if (paramType == ParameterType::COLORPICKER)
             {
-                // Assuming default color is white (1.0, 1.0, 1.0)
                 setUniformValue(uniformName, 1.0f, 1.0f, 1.0f);
             }
         }
@@ -79,7 +79,7 @@ public:
     GLuint getId() const
     { return this->programId(); }
 
-    ShaderName getName() const
+    ShaderType getName() const
     { return name; }
 
     bool isActive() const
@@ -93,147 +93,85 @@ public:
 
     virtual std::vector<ValueTuple> getParameters() const = 0;
     virtual const QString getTitle() const = 0;
+    virtual const QString getTitleWithNumber() const = 0;
     [[nodiscard]] virtual Shader* createCopy() const = 0;
 };
 
 // BASE SHADER
 class BaseShader : public Shader
 {
+private:
+    static unsigned int copiesCreated;
+
 public:
-    BaseShader() : Shader(
-            ":/shaders/base.vert",
-            ":/shaders/base.frag",
-            ShaderName::Base) {}
+    BaseShader();
 
-    std::vector<ValueTuple> getParameters() const override
-    {
-        return {};
-    }
-
-    const QString getTitle() const override
-    {
-        return "Base";
-    }
-
-    [[nodiscard]] Shader* createCopy() const override
-    {
-        return new BaseShader();
-    }
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
 };
 
 
 // COLOR CORRECTION SHADER
 class CorrectionShader : public Shader
 {
+private:
+    static unsigned int copiesCreated;
+
 public:
-    CorrectionShader() : Shader(
-            ":/shaders/correction.vert",
-            ":/shaders/correction.frag",
-            ShaderName::Correction) {}
+    CorrectionShader();
 
-    std::vector<ValueTuple> getParameters() const override
-    {
-        return {
-            {-200, 200, 0, "exposure", "Exposure", ParameterType::SLIDER},
-            {0,    200, 100, "contrast", "Contrast", ParameterType::SLIDER},
-            {-100, 100, 0, "temperature", "Temperature", ParameterType::SLIDER},
-            {0,    200, 100, "saturation", "Saturation", ParameterType::SLIDER},
-            {-100, 100, 0, "brightness", "Brightness", ParameterType::SLIDER},
-            {0,    0,   0, "tintColor", "Tint color", ParameterType::COLORPICKER},
-            {0,    100, 0, "tintIntensity", "Tint intensity", ParameterType::SLIDER},
-            {0,    0,   0, "filterColor", "Filter color", ParameterType::COLORPICKER},
-            {0,    100, 0, "filterIntensity", "Filter intensity", ParameterType::SLIDER}
-        };
-    }
-
-    const QString getTitle() const override
-    {
-        return "Color Correction";
-    }
-
-    [[nodiscard]] Shader* createCopy() const override
-    {
-        return new CorrectionShader();
-    }
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
 };
 
 
 // SHARPNESS SHADER
 class SharpnessShader : public Shader
 {
+private:
+    static unsigned int copiesCreated;
+
 public:
-    SharpnessShader() : Shader(
-            ":/shaders/sharpness.vert",
-            ":/shaders/sharpness.frag",
-            ShaderName::Sharpness) {}
+    SharpnessShader();
 
-    std::vector<ValueTuple> getParameters() const override
-    {
-        return {
-            {0, 100, 10, "strength", "Strength", ParameterType::SLIDER}
-        };
-    }
-
-    const QString getTitle() const override
-    {
-        return "Sharpness";
-    }
-
-    [[nodiscard]] Shader* createCopy() const override
-    {
-        return new SharpnessShader();
-    }
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
 };
+
 
 // PIXELATION SHADER
 class PosterizeShader : public Shader
 {
+private:
+    static unsigned int copiesCreated;
+
 public:
-    PosterizeShader() : Shader(
-            ":/shaders/posterize.vert",
-            ":/shaders/posterize.frag",
-            ShaderName::Posterize) {}
+    PosterizeShader();
 
-    std::vector<ValueTuple> getParameters() const override
-    {
-        return {
-            {2, 100, 30, "numColors", "Posterize levels", ParameterType::SLIDER},
-            {1, 200, 100, "gamma", "Gamma", ParameterType::SLIDER}
-        };
-    }
-
-    const QString getTitle() const override
-    {
-        return "Posterization";
-    }
-
-    [[nodiscard]] Shader* createCopy() const override
-    {
-        return new PosterizeShader();
-    }
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
 };
+
 
 // COLOR REDUCTION SHADER
 class InvertShader : public Shader
 {
+private:
+    static unsigned int copiesCreated;
+
 public:
-    InvertShader() : Shader(
-            ":/shaders/invert.vert",
-            ":/shaders/invert.frag",
-            ShaderName::Invert) {}
+    InvertShader();
 
-    std::vector<ValueTuple> getParameters() const override
-    {
-        return {};
-    }
-
-    const QString getTitle() const override
-    {
-        return "Invert Colors";
-    }
-
-    [[nodiscard]] Shader* createCopy() const override
-    {
-        return new InvertShader();
-    }
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
 };

@@ -82,6 +82,11 @@ bool ShaderManager::getShaderState(ShaderID shaderId) const
     return shaders.at(shaderId)->isActive();
 }
 
+unsigned int ShaderManager::getTypeCopiesCount(const ShaderType shaderType)
+{
+    return typeCopiesCount.at(shaderType);
+}
+
 void ShaderManager::moveShaderUp(ShaderID shaderId)
 {
     for (int i = 2; i < shadersOrder.size(); i++)
@@ -113,21 +118,21 @@ QPair<Shader*, int> ShaderManager::copyShader(GLuint shaderId)
     newShader->compile();
     assert(newShader->getId() != shaderId);
 
-    shaders.insert(std::make_pair(newShader->getId(), newShader));
+    typeCopiesCount[newShader->getName()]++;
+
     int indexToInsert = this->getIndexInOrder(shaderId) + 1;
-    shadersOrder.insert(indexToInsert, newShader->getId());
+    addShader(newShader, indexToInsert);
 
     return qMakePair(newShader, indexToInsert);
 }
 
 // Returns index that deleted shader was at
-// todo check if last
 int ShaderManager::deleteShader(GLuint shaderId)
 {
+    // TODO confirm if last
     delete shaders.at(shaderId);
     shaders[shaderId] = nullptr;
     shaders.erase(shaderId);
-
     int indexToRemove = getIndexInOrder(shaderId);
     shadersOrder.removeAt(indexToRemove);
 
@@ -174,4 +179,10 @@ void ShaderManager::addShader(Shader* shader)
 {
     shaders.insert(std::make_pair(shader->getId(), shader));
     shadersOrder.push_back(shader->getId());
+}
+
+void ShaderManager::addShader(Shader *shader, int insertIndex)
+{
+    shaders.insert(std::make_pair(shader->getId(), shader));
+    shadersOrder.insert(insertIndex, shader->getId());
 }

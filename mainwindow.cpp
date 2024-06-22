@@ -71,7 +71,7 @@ void MainWindow::createShaderControls()
 {
     for (auto shaderId : glWidget->getCurrentShaderOrder())
     {
-        if (glWidget->getShaderById(shaderId)->getName() == ShaderName::Base) continue;
+        if (glWidget->getShaderById(shaderId)->getName() == ShaderType::Base) continue;
         createShaderSection(glWidget->getShaderById(shaderId));
     }
 }
@@ -103,9 +103,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-Section *MainWindow::createShaderSection(const Shader *shader)
+Section *MainWindow::createShaderSection(const Shader *shader, bool titleWithNumber)
 {
     Section* section = new Section(shader->getTitle(), 0, mainWidget);
+
+    if (titleWithNumber)
+        section->setTitle(shader->getTitleWithNumber());
+
     connectSectionToShader(section, shader->getId());
     QVBoxLayout* shaderLayout = createShaderParameters(shader->getId(),
                                                        shader->getParameters());
@@ -152,8 +156,9 @@ void MainWindow::connectSectionToShader(Section* section, ShaderID shader)
     connect(section, &Section::buttonCopyPressed, glWidget,
             [this, shader]()
             {
-                auto[newShaderPtr, indexInShaderOrder] = glWidget->handleShaderCopy(shader);
-                auto newSection = createShaderSection(newShaderPtr);
+                auto[newShaderPtr, indexInShaderOrder] =
+                    glWidget->handleShaderCopy(shader);
+                auto newSection = createShaderSection(newShaderPtr, true);
                 // -1 because there's no base shader section
                 mainLayout->insertWidget(indexInShaderOrder - 1, newSection);
             }
