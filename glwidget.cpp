@@ -66,6 +66,10 @@ void GLWidget::initializeShaders()
     currentShader = new InvertShader();
     currentShader->compile();
     shaderManager->addShader(currentShader);
+
+    currentShader = new PixelateShader();
+    currentShader->compile();
+    shaderManager->addShader(currentShader);
 }
 
 bool GLWidget::loadTexture(const QString &filename)
@@ -130,7 +134,7 @@ bool GLWidget::loadTexture(const QString &filename)
 
         for (auto shaderId : getCurrentShaderOrder())
         {
-            if (getShaderById(shaderId)->getName() == ShaderType::Sharpness)
+            if (getShaderById(shaderId)->getName() == ShaderType::Sharpness || getShaderById(shaderId)->getName() == ShaderType::Pixelate)
             {
                 useShader(shaderId);
                 shaderManager->setFloat(shaderId, (char*)"textureWidth", texture->width());

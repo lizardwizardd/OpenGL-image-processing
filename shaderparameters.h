@@ -11,6 +11,7 @@ enum class ShaderType
     Sharpness,
     Posterize,
     Invert,
+    Pixelate,
     Count
 };
 
@@ -145,7 +146,7 @@ public:
 };
 
 
-// PIXELATION SHADER
+// POSTERIZATION SHADER
 class PosterizeShader : public Shader
 {
 private:
@@ -169,6 +170,22 @@ private:
 
 public:
     InvertShader();
+
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
+};
+
+
+// PIXELIZATION SHADER
+class PixelateShader : public Shader
+{
+private:
+    static unsigned int copiesCreated;
+
+public:
+    PixelateShader();
 
     std::vector<ValueTuple> getParameters() const override;
     const QString getTitle() const override;

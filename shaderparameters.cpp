@@ -1,13 +1,8 @@
 #include "shaderparameters.h"
 
-unsigned int BaseShader::copiesCreated = 0;
-unsigned int CorrectionShader::copiesCreated = 0;
-unsigned int SharpnessShader::copiesCreated = 0;
-unsigned int PosterizeShader::copiesCreated = 0;
-unsigned int InvertShader::copiesCreated = 0;
-
-
 // BaseShader
+unsigned int BaseShader::copiesCreated = 0;
+
 BaseShader::BaseShader() : Shader(
         ":/shaders/base.vert",
         ":/shaders/base.frag",
@@ -39,6 +34,8 @@ Shader* BaseShader::createCopy() const
 
 
 // CorrectionShader
+unsigned int CorrectionShader::copiesCreated = 0;
+
 CorrectionShader::CorrectionShader() : Shader(
         ":/shaders/default.vert",
         ":/shaders/correction.frag",
@@ -80,6 +77,8 @@ Shader* CorrectionShader::createCopy() const
 
 
 // SharpnessShader
+unsigned int SharpnessShader::copiesCreated = 0;
+
 SharpnessShader::SharpnessShader() : Shader(
         ":/shaders/default.vert",
         ":/shaders/sharpness.frag",
@@ -113,6 +112,8 @@ Shader* SharpnessShader::createCopy() const
 
 
 // PosterizeShader
+unsigned int PosterizeShader::copiesCreated = 0;
+
 PosterizeShader::PosterizeShader() : Shader(
         ":/shaders/default.vert",
         ":/shaders/posterize.frag",
@@ -147,6 +148,8 @@ Shader* PosterizeShader::createCopy() const
 
 
 // InvertShader
+unsigned int InvertShader::copiesCreated = 0;
+
 InvertShader::InvertShader() : Shader(
         ":/shaders/default.vert",
         ":/shaders/invert.frag",
@@ -176,3 +179,37 @@ Shader* InvertShader::createCopy() const
     return new InvertShader();
 }
 
+
+// PixelateShader
+unsigned int PixelateShader::copiesCreated = 0;
+
+PixelateShader::PixelateShader() : Shader(
+        ":/shaders/default.vert",
+        ":/shaders/pixelate.frag",
+        ShaderType::Pixelate) {}
+
+std::vector<Shader::ValueTuple> PixelateShader::getParameters() const
+{
+    return {
+        {1, 64, 4, "pixelSize", "Pixel size", ParameterType::SLIDER}
+    };
+}
+
+const QString PixelateShader::getTitle() const
+{
+    return "Pixelate";
+}
+
+const QString PixelateShader::getTitleWithNumber() const
+{
+    if (this->copiesCreated > 0)
+        return getTitle() + " " + QString::number(this->copiesCreated);
+    else
+        return getTitle();
+}
+
+Shader* PixelateShader::createCopy() const
+{
+    this->copiesCreated++;
+    return new PixelateShader();
+}

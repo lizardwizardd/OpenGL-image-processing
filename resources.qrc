@@ -7,5 +7,6 @@
         <file>shaders/sharpness.frag</file>
         <file>shaders/invert.frag</file>
         <file>shaders/default.vert</file>
+        <file>shaders/pixelate.frag</file>
     </qresource>
 </RCC>
