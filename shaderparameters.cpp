@@ -40,7 +40,7 @@ Shader* BaseShader::createCopy() const
 
 // CorrectionShader
 CorrectionShader::CorrectionShader() : Shader(
-        ":/shaders/correction.vert",
+        ":/shaders/default.vert",
         ":/shaders/correction.frag",
         ShaderType::Correction) {}
 
@@ -81,7 +81,7 @@ Shader* CorrectionShader::createCopy() const
 
 // SharpnessShader
 SharpnessShader::SharpnessShader() : Shader(
-        ":/shaders/sharpness.vert",
+        ":/shaders/default.vert",
         ":/shaders/sharpness.frag",
         ShaderType::Sharpness) {}
 
@@ -114,7 +114,7 @@ Shader* SharpnessShader::createCopy() const
 
 // PosterizeShader
 PosterizeShader::PosterizeShader() : Shader(
-        ":/shaders/posterize.vert",
+        ":/shaders/default.vert",
         ":/shaders/posterize.frag",
         ShaderType::Posterize) {}
 
@@ -148,7 +148,7 @@ Shader* PosterizeShader::createCopy() const
 
 // InvertShader
 InvertShader::InvertShader() : Shader(
-        ":/shaders/invert.vert",
+        ":/shaders/default.vert",
         ":/shaders/invert.frag",
         ShaderType::Invert) {}
 
