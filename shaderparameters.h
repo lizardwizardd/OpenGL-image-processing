@@ -12,6 +12,7 @@ enum class ShaderType
     Posterize,
     Invert,
     Pixelate,
+    Crt,
     Count
 };
 
@@ -186,6 +187,22 @@ private:
 
 public:
     PixelateShader();
+
+    std::vector<ValueTuple> getParameters() const override;
+    const QString getTitle() const override;
+    const QString getTitleWithNumber() const override;
+    [[nodiscard]] Shader* createCopy() const override;
+};
+
+
+// CRT SHADER
+class CrtShader : public Shader
+{
+private:
+    static unsigned int copiesCreated;
+
+public:
+    CrtShader();
 
     std::vector<ValueTuple> getParameters() const override;
     const QString getTitle() const override;

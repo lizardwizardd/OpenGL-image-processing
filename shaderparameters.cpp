@@ -213,3 +213,36 @@ Shader* PixelateShader::createCopy() const
     this->copiesCreated++;
     return new PixelateShader();
 }
+
+
+// CrtShader
+unsigned int CrtShader::copiesCreated = 0;
+
+CrtShader::CrtShader() : Shader(
+        ":/shaders/default.vert",
+        ":/shaders/crt.frag",
+        ShaderType::Pixelate) {}
+
+std::vector<Shader::ValueTuple> CrtShader::getParameters() const
+{
+    return {};
+}
+
+const QString CrtShader::getTitle() const
+{
+    return "CRT Effect";
+}
+
+const QString CrtShader::getTitleWithNumber() const
+{
+    if (this->copiesCreated > 0)
+        return getTitle() + " " + QString::number(this->copiesCreated);
+    else
+        return getTitle();
+}
+
+Shader* CrtShader::createCopy() const
+{
+    this->copiesCreated++;
+    return new CrtShader();
+}

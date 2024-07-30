@@ -25,6 +25,7 @@ public:
     void setInt(ShaderID shaderId, const char* name, const int value);
     void setFloat(ShaderID shaderId, const char* name, const float value);
     void setVec3(ShaderID shaderId, const char* name, const QVector3D& value);
+    void setVec2(ShaderID shaderId, const char* name, const QVector2D& value);
 
     void addShader(Shader* shader);
     void addShader(Shader* shader, int insertIndex);

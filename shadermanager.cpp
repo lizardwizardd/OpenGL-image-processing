@@ -175,6 +175,11 @@ void ShaderManager::setVec3(ShaderID shaderId, const char* name, const QVector3D
     shaders.at(shaderId)->setUniformValue(name, value);
 }
 
+void ShaderManager::setVec2(GLuint shaderId, const char* name, const QVector2D& value)
+{
+    shaders.at(shaderId)->setUniformValue(name, value);
+}
+
 void ShaderManager::addShader(Shader* shader)
 {
     shaders.insert(std::make_pair(shader->getId(), shader));

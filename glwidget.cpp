@@ -70,6 +70,10 @@ void GLWidget::initializeShaders()
     currentShader = new PixelateShader();
     currentShader->compile();
     shaderManager->addShader(currentShader);
+
+    currentShader = new CrtShader();
+    currentShader->compile();
+    shaderManager->addShader(currentShader);
 }
 
 bool GLWidget::loadTexture(const QString &filename)
@@ -134,7 +138,9 @@ bool GLWidget::loadTexture(const QString &filename)
 
         for (auto shaderId : getCurrentShaderOrder())
         {
-            if (getShaderById(shaderId)->getName() == ShaderType::Sharpness || getShaderById(shaderId)->getName() == ShaderType::Pixelate)
+            if (getShaderById(shaderId)->getName() == ShaderType::Sharpness ||
+                getShaderById(shaderId)->getName() == ShaderType::Pixelate ||
+                getShaderById(shaderId)->getName() == ShaderType::Crt)
             {
                 useShader(shaderId);
                 shaderManager->setFloat(shaderId, (char*)"textureWidth", texture->width());
@@ -181,7 +187,7 @@ void GLWidget::paintGL()
 
     // RENDER
 
-    if (activeShadersCount == 1)
+    if (activeShadersCount == 1) // Only base shader is active
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT);

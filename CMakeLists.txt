@@ -25,15 +25,6 @@ set(PROJECT_SOURCES
         shaderparameters.cpp
         shaderparameters.h
 
-        shaders/default.vert
-        shaders/base.vert
-
-        shaders/base.frag
-        shaders/correction.frag
-        shaders/sharpness.frag
-        shaders/posterize.frag
-        shaders/invert.frag
-
         resources.qrc
 )
 
